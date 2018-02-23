@@ -1,5 +1,6 @@
-from flask import Flask, request, abort, render_template
-from flask import jsonify, render_template
+# from flask import Flask, request, abort, render_template
+# from flask import jsonify, render_template
+
 import sys
 import json
 import copy
@@ -33,7 +34,7 @@ import logging
 from logging import config
 
 from pymetamap import MetaMap
-from singletonConceptId import *
+# from singletonConceptId import *
 
 import question_classifier
 
@@ -91,9 +92,9 @@ class Pipeline(object):
 
     def getSummaries(self):
 
-        metamapInstance = SingletonMetaMap.Instance()
-        metamapInstance.startMetaMap()
-        #raw_input()
+        # metamapInstance = SingletonMetaMap.Instance()
+        # metamapInstance.startMetaMap()
+        # raw_input()
 
         allAnswerQuestion = []
         infile = open(self.filePath, 'r')
@@ -150,7 +151,6 @@ class Pipeline(object):
             modifiedQuestion['body'] = expandedQuestion
             logger.info('Updated the question with expander output...')
 
-
             #EXECUTION OF ONE OF BIRANKERS
             #rankedSentencesList = self.biRankerInstance.getRankedList(modifiedQuestion)
             rankedSentencesList = self.biRankerInstance.getRankedList(question)
@@ -191,12 +191,12 @@ class Pipeline(object):
             AnswerQuestion = question
             allAnswerQuestion.append(AnswerQuestion)
             logger.info('Inserted ideal answer into the json dictionary')
-        metamapInstance.stopMetaMap()
+        # metamapInstance.stopMetaMap()
         return allAnswerQuestion
 
 if __name__ == '__main__':
     filePath = sys.argv[1]
-    #filePath = "../input/BioASQ-trainingDataset5b.json"
+    # filePath = "../input/BioASQ-trainingDataset5b.json"
     expanderInstance = NoExpander()
     biRankerInstance = CoreMMR()
     orderInstance = MajorityCluster()
@@ -210,4 +210,4 @@ if __name__ == '__main__':
     idealAnswerJson['questions'] = pipelineInstance.getSummaries()
     with open('ordered_fusion.json', 'w') as outfile:
         json.dump(idealAnswerJson, outfile)
-    #print json.dumps(idealAnswerJson)
+    # print json.dumps(idealAnswerJson)

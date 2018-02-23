@@ -2,12 +2,12 @@ import abc
 from abc import abstractmethod
 
 import os
-from pymedtermino import *
-from pymedtermino.snomedct import *
-from pymedtermino.umls import *
-from pymetamap import MetaMap
+# from pymedtermino import *
+# from pymedtermino.snomedct import *
+# from pymedtermino.umls import *
+# from pymetamap import MetaMap
 
-from singletonConceptId import *
+# from singletonConceptId import *
 
 import logging
 from logging import config
