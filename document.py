@@ -13,6 +13,7 @@ import logging
 import os.path
 
 logger = logging.getLogger(__name__)
+
 # resources for postagger
 _POSTAGGER = None
 _currentdir = os.path.dirname(os.path.realpath(__file__))
@@ -81,23 +82,25 @@ def isGoodToken(token, stopwords=nltk.corpus.stopwords.words('english')):
     tok, pos = token
     return tok.lower() not in stopwords and pos != 'PUNCT'
 
-
 class Document():
     """
     A document. Contains different representations of the document
     that will be used for summarization.
     """
 
-    def __init__(self, docfile, skipPreprocess=False):
+    def __init__(self, doc_id, skipPreprocess=False):
         """
         Initialize a document and preprocesses it by default.
         One can use its own preprocessing method but must define
         the fields tokens, taggedTokens and stemTokens.
         """
-        with codecs.open(docfile, 'r', 'utf-8') as doc:
-            self.content = doc.read()
-        self.docfile = docfile
 
+        # with codecs.open(docfile, 'r', 'utf-8') as doc:
+        #     self.content = doc.read()
+        # self.docfile = docfile
+
+        self.title = None
+        self.id = doc_id
         self.content = normalize(self.content)
 
         if not skipPreprocess:
