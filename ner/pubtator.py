@@ -29,3 +29,11 @@ def get_bio_concepts(doc_id, concept='all'):
         })
 
     return bioconcepts
+
+def get_doctext_from_docid(doc_id):
+    uri = 'https://www.ncbi.nlm.nih.gov/CBBresearch/Lu/Demo/RESTful/tmTool.cgi/none/%d/JSON/' % doc_id
+    raw_data = load_from_uri(uri)
+    if raw_data.startswith('[Error]'):
+        return ''
+
+    return raw_data['text']
