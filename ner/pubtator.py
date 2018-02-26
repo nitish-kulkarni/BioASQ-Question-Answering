@@ -4,15 +4,21 @@
 import json
 import requests
 
+CACHE = {}
+
 def load_from_uri(uri):
     r = requests.get(uri)
     r.encoding = 'utf-8'
 
     return r.text
 
-def get_bio_concepts(doc_id, concept='all'):
+def get_bio_concepts(doc_id, doc_text, concept='all'):
     if concept == 'all':
         concept = 'BioConcept'
+
+    key = (concept, doc_id)
+    if key in CACHE:
+        return CACHE[key]
 
     uri = 'https://www.ncbi.nlm.nih.gov/CBBresearch/Lu/Demo/RESTful/tmTool.cgi/%s/%d/JSON/' % (concept, doc_id)
     raw_data = load_from_uri(uri)
@@ -28,6 +34,7 @@ def get_bio_concepts(doc_id, concept='all'):
             'type': denotation['obj'].split(':')[0]
         })
 
+    CACHE[key] = bioconcepts
     return bioconcepts
 
 def get_doctext_from_docid(doc_id):
