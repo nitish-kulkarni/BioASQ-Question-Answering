@@ -33,6 +33,30 @@ def evaluate(tagger, data):
 
     return pd.DataFrame(results)
 
+def summary_from_results(results):
+list_type = results[results.type == 'list']
+factoid_type = results[results.type == 'factoid']
+rows = []
+
+for df, qtype in [(list_type, 'list'), (factoid_type, 'factoid')]:
+    N = len(df) * 1.0
+    exact_matched_questions = len(df[df.exact_matches > 0]) / N
+    soft_match_questions = len(df[df.soft_matches > 0]) / N
+
+    n_exact_answers = df.total_answers.sum() * 1.0
+    exact_matched_answers = df.exact_matches.sum() / n_exact_answers
+    soft_match_answers = df.soft_matches.sum() / n_exact_answers
+
+    rows.append({
+        'type': qtype,
+        'exact_matched_questions': exact_matched_questions,
+        'soft_match_questions': soft_match_questions,
+        'exact_matched_answers': exact_matched_answers,
+        'soft_match_answers': soft_match_answers,
+    })
+
+    return pd.DataFrame(rows, columns=['type', 'exact_matched_questions', 'soft_match_questions', 'exact_matched_answers', 'soft_match_answers'])
+
 def _soft_matches(answers, entities):
     answers = list(map(_normalize, answers))
     entities = list(map(_normalize, entities))
