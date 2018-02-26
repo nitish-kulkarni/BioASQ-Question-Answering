@@ -1,0 +1,1 @@
+java -cp "../../../lingpipe-4.1.2.jar;interestingPhrases.jar" InterestingPhrases
