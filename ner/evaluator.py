@@ -35,6 +35,7 @@ def evaluate(tagger, data, multiple=False, snippets=False):
         exact_matches = sum([answer in entities for answer in answers])
         soft_matches = _soft_matches(answers, entities)
         results.append({
+            'qid': question.qid,
             'answers': answers,
             'entities': entities,
             'exact_matches': exact_matches,
@@ -91,4 +92,3 @@ def _flatten(l):
     for item in l:
         flattened += _flatten(item)
     return flattened
-

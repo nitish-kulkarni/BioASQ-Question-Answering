@@ -2,14 +2,17 @@
 """
 
 import json
+import numpy as np
 import pandas as pd
 
 import ner.pubtator as pubtator
+import re
 
 class Question():
 
-    def __init__(self, q_type, question, documents, snippets, ideal_answer_ref=None, exact_answer_ref=None):
+    def __init__(self, qid, q_type, question, documents, snippets, ideal_answer_ref=None, exact_answer_ref=None):
 
+        self.qid = qid
         self.type = q_type
         self.question = question
         self.documents = documents
@@ -19,6 +22,8 @@ class Question():
         self.exact_answer = None
         self.ideal_answer_ref = ideal_answer_ref
         self.exact_answer_ref = exact_answer_ref
+
+        self.V_snippets = _vocab_size([i.text for i in snippets])
 
 class Snippet():
 
@@ -51,12 +56,13 @@ class DataLoader():
 
     def _get_questions(self):
         questions = []
-        for question in self.data:
+        for qid, question in enumerate(self.data):
             snippets = [Snippet(s['text'], s['document']) for s in question.get('snippets', [])]
             documents = [Document(doc_uri) for doc_uri in question.get('documents', [])]
 
             questions.append(
                 Question(
+                    qid,
                     question['type'],
                     question['body'],
                     documents,
@@ -70,3 +76,11 @@ class DataLoader():
 
 def _id_from_pubmed_uri(uri):
     return int(uri.split('/')[-1])
+
+def _tokenize(text):
+    return re.findall('\w+', text)
+
+def _vocab_size(strings):
+    if len(strings) == 0:
+        return 0
+    return np.unique(np.concatenate([_tokenize(string) for string in strings])).size
