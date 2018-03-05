@@ -22,6 +22,8 @@ import cPickle as pickle
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+BASE_PATH = './ner'
+
 def evaluate_sentence(doc_id, sentence, concept='all'):
 
     tokens = nltk.word_tokenize(sentence)
@@ -50,7 +52,7 @@ def load_object(filename):
 def load_gramcnn():
     #load parameters
     #print '------params----'
-    opts, parameters, model_name = load_object('cnngram/src/main_params.pkl')
+    opts, parameters, model_name = load_object('%s/cnngram/src/main_params.pkl' % BASE_PATH)
 
 
     #prep for gram-cnn
@@ -58,7 +60,7 @@ def load_gramcnn():
     lower = parameters['lower']
     zeros = parameters['zeros']
     tag_scheme = parameters['tag_scheme']
-    word_to_id, char_to_id, tag_to_id, pt_to_id, dico_words, id_to_tag = reload_mappings('cnngram/models/easy/mappings.pkl')
+    word_to_id, char_to_id, tag_to_id, pt_to_id, dico_words, id_to_tag = reload_mappings('%s/cnngram/models/easy/mappings.pkl' % BASE_PATH)
 
     max_seq_len = 200
     word_emb_weight = np.zeros((len(dico_words), parameters['word_dim']))
@@ -94,11 +96,11 @@ def process_results(result_arr, sentence):
 
     for _type, _token in zip(_types, _tokens):
         _dict = {'entity': _token, 'type': str(_type)}
-        result_dict.append(dict)
+        result_dict.append(_dict)
 
     return result_dict
 
 compilation, parameters, gramcnn = load_gramcnn()
 opts, id_to_tag, word_to_id, char_to_id, tag_to_id, pt_to_id, lower, max_seq_len = compilation
-#sentence = 'Number of glucocorticoid receptors in lymphocytes and their sensitivity to hormone action.'
-#print evaluate_sentence(78, sentence)
+# sentence = 'Number of glucocorticoid receptors in lymphocytes and their sensitivity to hormone action.'
+# print evaluate_sentence(78, sentence)
