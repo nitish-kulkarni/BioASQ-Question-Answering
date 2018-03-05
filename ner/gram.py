@@ -9,13 +9,13 @@ from collections import OrderedDict
 import nltk
 from gensim.models import word2vec
 
-from gcnn.src import loader
-from gcnn.src.utils2 import create_input
-from gcnn.src.utils2 import models_path, evaluate, eval_script, eval_temp, reload_mappings, create_result, create_JNLPBA_result
-from gcnn.src.loader import word_mapping, char_mapping, tag_mapping, pt_mapping
-from gcnn.src.loader import update_tag_scheme, prepare_dataset
-from gcnn.src.loader import augment_with_pretrained
-from gcnn.src.GRAMCNN import GRAMCNN
+from cnngram.src import loader
+from cnngram.src.utils2 import create_input
+from cnngram.src.utils2 import models_path, evaluate, eval_script, eval_temp, reload_mappings, create_result, create_JNLPBA_result
+from cnngram.src.loader import word_mapping, char_mapping, tag_mapping, pt_mapping
+from cnngram.src.loader import update_tag_scheme, prepare_dataset
+from cnngram.src.loader import augment_with_pretrained
+from cnngram.src.GRAMCNN import GRAMCNN
 
 import tensorflow as tf
 import cPickle as pickle
@@ -50,7 +50,7 @@ def load_object(filename):
 def load_gramcnn():
     #load parameters
     #print '------params----'
-    opts, parameters, model_name = load_object('gcnn/src/main_params.pkl')
+    opts, parameters, model_name = load_object('cnngram/src/main_params.pkl')
 
 
     #prep for gram-cnn
@@ -58,7 +58,7 @@ def load_gramcnn():
     lower = parameters['lower']
     zeros = parameters['zeros']
     tag_scheme = parameters['tag_scheme']
-    word_to_id, char_to_id, tag_to_id, pt_to_id, dico_words, id_to_tag = reload_mappings('gcnn/models/easy/mappings.pkl')
+    word_to_id, char_to_id, tag_to_id, pt_to_id, dico_words, id_to_tag = reload_mappings('cnngram/models/easy/mappings.pkl')
 
     max_seq_len = 200
     word_emb_weight = np.zeros((len(dico_words), parameters['word_dim']))
