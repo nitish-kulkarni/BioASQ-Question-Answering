@@ -9,7 +9,7 @@ from tqdm import tqdm
 def _entities_from_tagger(tagger, doc_id, doc_text):
     return [e['entity'].lower() for e in tagger(doc_id, doc_text)]
 
-def evaluate(tagger, data, multiple=False):
+def evaluate(tagger, data, multiple=False, snippets=False):
     list_type = data.get_questions_of_type('list')
     factoid_type = data.get_questions_of_type('factoid')
     results = []
@@ -17,18 +17,20 @@ def evaluate(tagger, data, multiple=False):
     missed = 0
     for question in tqdm(list_type + factoid_type):
         answers = [answer.lower() for answer in _flatten(question.exact_answer_ref)]
-        if multiple:
-            doc_ids = [document.doc_id for document in question.documents]
-            doc_texts = [document.text for document in question.documents]
-            try:
+        docs = question.snippets if snippets else question.documents
+        try:
+            if multiple:
+                doc_ids = [document.doc_id for document in docs]
+                doc_texts = [document.text for document in docs]
                 entities = _entities_from_tagger(tagger, doc_ids, doc_texts)
-            except:
-                missed += 1
-                continue            
-        else:
-            entities = []
-            for document in question.documents:
-                entities += _entities_from_tagger(tagger, document.doc_id, document.text)
+            else:
+                entities = []
+                for document in docs:
+                    entities += _entities_from_tagger(tagger, document.doc_id, document.text)
+        except:
+            missed += 1
+            continue
+
         entities = list(np.unique(entities))
         exact_matches = sum([answer in entities for answer in answers])
         soft_matches = _soft_matches(answers, entities)

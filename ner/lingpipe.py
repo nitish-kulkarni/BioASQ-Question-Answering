@@ -85,7 +85,18 @@ def submit_command(input_string, ref='./cmd_ne_en_news_muc6.sh'):
 	return output_string
 
 
-def NER_tagger(input_string, method='lingpipe', params=None):
+def NER_tagger(doc_id, input_string, method='lingpipe', params=None):
+
+	if method == 'lingpipe':
+		input_string = input_string.strip(' ').strip('.') + '. '
+		output = submit_command(input_string)
+		return process_xml_lingpipe(output)
+
+	return []
+
+def NER_tagger_multiple(doc_ids, input_strings, method='lingpipe', params=None):
+
+	input_string = '. '.join([i.strip(' ').strip('.') for i in input_strings + ['']])
 
 	if method == 'lingpipe':
 		if '. ' not in input_string:
@@ -94,6 +105,7 @@ def NER_tagger(input_string, method='lingpipe', params=None):
 		return process_xml_lingpipe(output)
 
 	return []
+
 
 # print NER_tagger('Cancer see the Spot. See irrelevant Spot run interesting.')
 # tags.pretty_print()
