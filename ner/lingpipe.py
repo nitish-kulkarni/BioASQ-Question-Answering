@@ -46,6 +46,12 @@ def etree_to_dict(t):
             d[t.tag] = text
     return d
 
+def _tag(tag):
+	return {
+		'entity': tag.get('#text', ''),
+		'type': tag.get('@TYPE', '')
+	}
+
 def process_xml_lingpipe(xml_string):
 
 	_root = ET.fromstring(xml_string)
@@ -53,57 +59,53 @@ def process_xml_lingpipe(xml_string):
 	relevant_data = _dict['output']['s']
 	saved_tags = []
 
+	if isinstance(relevant_data, dict):
+		relevant_data = [relevant_data]
+
 	for element in relevant_data:
 		for key in element:
 			if key == 'ENAMEX':
 				tag = element[key]
 				if type(tag) == type(list()):
 					for t in tag:
-						saved_tags.append(t)
+						saved_tags.append(_tag(t))
 				else:
-					saved_tags.append(tag)
+					saved_tags.append(_tag(tag))
 
-	resulting_tags = dd(list)
-	for tag in saved_tags:
-		resulting_tags[tag['@TYPE']].append(tag['#text'])
-
-	return Tagger(dict(resulting_tags)).tags
+	return saved_tags
 
 def submit_command(input_string, ref='./cmd_ne_en_news_muc6.sh'):
 
-	call_path = os.getcwd() + '/ling/demos/generic/bin/'
+	# call_path = os.getcwd() + '/ling/demos/generic/bin/'
+	call_path = 'ner/ling/demos/generic/bin/'
 	command_ref = ref
-	command_string = 'echo ' + input_string + ' | ' + command_ref
+	command_string = 'echo ' + '"%s"' % input_string + ' | ' + command_ref
 	output_string = subprocess.check_output(command_string, shell=True, cwd=call_path)
 
 	return output_string
 
 
-def NER_tagger(input_string, method='lingpipe', params=None):
+def NER_tagger(doc_id, input_string, method='lingpipe', params=None):
 
 	if method == 'lingpipe':
+		input_string = input_string.strip(' ').strip('.') + '. '
 		output = submit_command(input_string)
 		return process_xml_lingpipe(output)
 
+	return []
+
+def NER_tagger_multiple(doc_ids, input_strings, method='lingpipe', params=None):
+
+	input_string = '. '.join([i.strip(' ').strip('.') for i in input_strings + ['']])
+
+	if method == 'lingpipe':
+		if '. ' not in input_string:
+			input_string += '. '
+		output = submit_command(input_string)
+		return process_xml_lingpipe(output)
+
+	return []
 
 
-#tags = NER_tagger('Cancer see the Spot. See irrelevant Spot run interesting.')
-#tags.pretty_print()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# print NER_tagger('Cancer see the Spot. See irrelevant Spot run interesting.')
+# tags.pretty_print()
