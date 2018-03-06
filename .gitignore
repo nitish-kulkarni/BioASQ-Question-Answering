@@ -1,1 +1,7 @@
 .idea/*
+
+*.pyc
+*.log
+*.json
+
+PyRogue/*.pyc
