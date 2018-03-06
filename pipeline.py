@@ -12,9 +12,11 @@ from SnomedctExpander import SnomedctExpander
 from UMLSExpander import UMLSExpander
 
 from BiRanker import BiRanker
-from CoreMMR import CoreMMR
+from coreMMR import CoreMMR
 from SoftMMR import SoftMMR
 from HardMMR import HardMMR
+from BM25Ranker import BM25Ranker
+from IndriRanker import IndriRanker
 
 from Tiler import Tiler
 from Concatenation import Concatenation
@@ -28,7 +30,6 @@ from MajorityCluster import MajorityCluster
 
 from Evaluator import Evaluator
 import pyrouge
-from pyrouge import Rouge155
 
 import logging
 from logging import config
@@ -37,6 +38,8 @@ from pymetamap import MetaMap
 # from singletonConceptId import *
 
 import question_classifier
+
+from PyRouge import pyrouge as Pyrouge
 
 '''
 @Author: Khyathi Raghavi Chandu
@@ -96,11 +99,18 @@ class Pipeline(object):
         # metamapInstance.startMetaMap()
         # raw_input()
 
+        rouge = Pyrouge.Rouge()
+
         allAnswerQuestion = []
         infile = open(self.filePath, 'r')
         data = json.load(infile)
         logger.info('Loaded training data')
-        qc = question_classifier.classifier()
+        # qc = question_classifier.classifier()
+
+        count = 0
+        avg_prec = 0
+        avg_recall = 0
+        avg_f = 0
 
         for (i, question) in enumerate(data['questions']): # looping over all questions
 
@@ -123,7 +133,6 @@ class Pipeline(object):
                 pred_length = 4
             else:
                 pass
-
 
             modifiedQuestion = copy.copy(question)
 
@@ -169,7 +178,11 @@ class Pipeline(object):
 
             #EXECUTION OF TILING
             tiler_info = {'max_length': 200, 'max_tokens': 200, 'k': 2, 'max_iter': 20}
-            orderedList = self.orderInstance.orderSentences(rankedSentencesListOriginal, rankedSnippets, tiler_info)
+            try:
+                orderedList = self.orderInstance.orderSentences(rankedSentencesListOriginal, rankedSnippets, tiler_info)
+            except:
+                print 'bla'
+                print question['body']
             fusedList = self.fusionInstance.tileSentences(orderedList, 200)
             logger.info('Tiling sentences to get alternative summary...')
             
@@ -186,19 +199,33 @@ class Pipeline(object):
 
             #logger.info('Choosing better summary ...')
 
+            if pred_cat == 'summary':
+                score = rouge.rouge_l([finalSummary.encode('ascii')], [str(question['ideal_answer']).encode('ascii')])
+                count += 1
+                avg_prec += score[0]
+                avg_recall += score[1]
+                avg_f += score[1]
+
             question['ideal_answer'] = finalSummary
 
             AnswerQuestion = question
             allAnswerQuestion.append(AnswerQuestion)
             logger.info('Inserted ideal answer into the json dictionary')
         # metamapInstance.stopMetaMap()
+        avg_prec /= count
+        avg_recall /= count
+        avg_f /= count
+        print 'My results '
+        print avg_prec, avg_recall, avg_f
         return allAnswerQuestion
 
 if __name__ == '__main__':
-    filePath = sys.argv[1]
-    # filePath = "../input/BioASQ-trainingDataset5b.json"
+    # filePath = sys.argv[1]
+    filePath = "./input/BioASQ-trainingDataset5b.json"
     expanderInstance = NoExpander()
     biRankerInstance = CoreMMR()
+    # biRankerInstance = BM25Ranker()
+    # biRankerInstance = IndriRanker()
     orderInstance = MajorityCluster()
     fusionInstance = Fusion()
     tilerInstance = Concatenation()
@@ -210,4 +237,4 @@ if __name__ == '__main__':
     idealAnswerJson['questions'] = pipelineInstance.getSummaries()
     with open('ordered_fusion.json', 'w') as outfile:
         json.dump(idealAnswerJson, outfile)
-    # print json.dumps(idealAnswerJson)
+    print json.dumps(idealAnswerJson)
