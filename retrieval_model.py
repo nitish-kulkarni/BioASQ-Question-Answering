@@ -1,7 +1,7 @@
 import json
-import numpy as np
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
+import numpy as np
 
 stop_words = set(stopwords.words('english'))
 
@@ -30,6 +30,39 @@ class BM25(object):
         tf /= tf + self.k1 * ((1 - self.b) + self.b * (doc_length / average_doc_length))
 
         return tf * idf
+
+
+class Indri(object):
+
+    def __init__(self, lambda_, mu):
+        self.lambda_ = lambda_
+        self.mu = mu
+
+    def get_score(self, inverted_index, question_tokens, doc_length, docId):
+        score = 0.0
+        for token in question_tokens:
+            temp = self.get_individual_term_score(inverted_index, token, doc_length, docId)
+            if temp != 0:
+                score += temp
+            else:
+                return 0
+        return np.exp(score)
+
+    def get_individual_term_score(self, inverted_index, token, doc_length, docId):
+        p_mle = get_mle_from_corpus(inverted_index, token)
+        score = self.lambda_ * p_mle
+        if token in inverted_index:
+            score += (1 - self.lambda_) * (inverted_index[token].get(docId, 0) + self.mu * p_mle)/ (doc_length + self.mu)
+        else:
+            return 0
+        return np.log(score)
+
+
+def get_mle_from_corpus(inverted_index, token):
+    count = 0
+    for i, doc in enumerate(inverted_index.get(token, [])):
+        count += inverted_index[token].get(doc, 0)
+    return count
 
 
 def get_docID(snippet):
@@ -65,6 +98,12 @@ def get_BM25_score(term_dict, question_tokens, docId, tokens, N, avg_doc_length)
     common_tokens = set(question_tokens).intersection(set(tokens))
     bm25_model = BM25(k1=1.2, k3=0, b=0.75, N=N)
     score = bm25_model.get_score(term_dict, common_tokens, N, docId, avg_doc_length)
+    return score
+
+
+def get_Indri_Score(inverted_index, question_tokens, docId, doc_length):
+    indri_model = Indri(lambda_=0.75, mu=5000)
+    score = indri_model.get_score(inverted_index, question_tokens, doc_length, docId)
     return score
 
 
@@ -116,7 +155,7 @@ def get_tokens(text):
 
 
 def main():
-    filepath = './input/BioASQ-trainingDataset5b.json'
+    filepath = './input/toydata.json'
     score_list = get_score_list(filepath, 'BM25')
     print('retrieved results')
 
