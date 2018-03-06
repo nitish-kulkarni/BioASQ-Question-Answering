@@ -38,7 +38,7 @@ def postag(sentence):
     """
     global _POSTAGGER
     if _POSTAGGER is None:
-        _POSTAGGER = nltk.tag.stanford.POSTagger(
+        _POSTAGGER = nltk.tag.stanford.StanfordPOSTagger(
             _POSMODEL, _POSJAR, encoding='utf-8')
 
     tagsentence = _POSTAGGER.tag(sentence)
@@ -87,20 +87,16 @@ class Document():
     A document. Contains different representations of the document
     that will be used for summarization.
     """
-
-    def __init__(self, doc_id, skipPreprocess=False):
+    def __init__(self, docfile, skipPreprocess=False):
         """
         Initialize a document and preprocesses it by default.
         One can use its own preprocessing method but must define
         the fields tokens, taggedTokens and stemTokens.
         """
+        with codecs.open(docfile, 'r', 'utf-8') as doc:
+            self.content = doc.read()
+        self.docfile = docfile
 
-        # with codecs.open(docfile, 'r', 'utf-8') as doc:
-        #     self.content = doc.read()
-        # self.docfile = docfile
-
-        self.title = None
-        self.id = doc_id
         self.content = normalize(self.content)
 
         if not skipPreprocess:
