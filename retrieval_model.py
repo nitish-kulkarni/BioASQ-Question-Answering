@@ -2,6 +2,7 @@ import json
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 import numpy as np
+import operator
 
 stop_words = set(stopwords.words('english'))
 
@@ -38,31 +39,47 @@ class Indri(object):
         self.lambda_ = lambda_
         self.mu = mu
 
-    def get_score(self, inverted_index, question_tokens, doc_length, docId):
-        score = 0.0
+    def get_score(self, inverted_index, question_tokens, doc_length, docId, N):
+        score = 1.0
         for token in question_tokens:
-            temp = self.get_individual_term_score(inverted_index, token, doc_length, docId)
-            if temp != 0:
-                score += temp
-            else:
-                return 0
-        return np.exp(score)
+            temp = self.get_individual_term_score(inverted_index, token, doc_length, docId, N)
+            score *= temp
 
-    def get_individual_term_score(self, inverted_index, token, doc_length, docId):
-        p_mle = get_mle_from_corpus(inverted_index, token)
+        score = np.power(score, float(1)/len(question_tokens))
+        return score
+
+    def get_individual_term_score(self, inverted_index, token, doc_length, docId, N):
+        p_mle = get_mle_from_corpus(inverted_index, token, N)
         score = self.lambda_ * p_mle
-        if token in inverted_index:
-            score += (1 - self.lambda_) * (inverted_index[token].get(docId, 0) + self.mu * p_mle)/ (doc_length + self.mu)
-        else:
-            return 0
-        return np.log(score)
+        score += (1 - self.lambda_) * (inverted_index[token].get(docId, 0) + self.mu * p_mle)/ (doc_length + self.mu)
+        return score
 
 
-def get_mle_from_corpus(inverted_index, token):
+def preprocess_sentences(sentences):
+    cleaned_sentences = set()
+    for sentence in sentences:
+        s = sentence.rstrip().lstrip()
+        s = s.replace('.', '')
+        cleaned_sentences.add(s)
+
+    return list(cleaned_sentences)
+
+
+def get_average_sentence_length(index, N):
+    total_terms = 0
+    for i, term in enumerate(index):
+        for j, doc in enumerate(index[term]):
+            total_terms += index[term][doc]
+
+    return float(total_terms)/N
+
+
+
+def get_mle_from_corpus(inverted_index, token, N):
     count = 0
     for i, doc in enumerate(inverted_index.get(token, [])):
         count += inverted_index[token].get(doc, 0)
-    return count
+    return float(count)/N
 
 
 def get_docID(snippet):
@@ -101,10 +118,41 @@ def get_BM25_score(term_dict, question_tokens, docId, tokens, N, avg_doc_length)
     return score
 
 
-def get_Indri_Score(inverted_index, question_tokens, docId, doc_length):
+def get_Indri_Score(inverted_index, question_tokens, docId, doc_length, N):
     indri_model = Indri(lambda_=0.75, mu=5000)
-    score = indri_model.get_score(inverted_index, question_tokens, doc_length, docId)
+    score = indri_model.get_score(inverted_index, question_tokens, doc_length, docId, N)
     return score
+
+
+def get_ranked_snippets(snippets, question_text, algo='BM25'):
+    question_tokens = get_tokens(question_text)
+    term_dict = dict()
+
+    ranked_snippets = []
+    snippet_text_dict = dict()
+    total_token_count = 0
+    for snippet in snippets:
+
+        tokens = get_tokens(snippet['text'])
+        total_token_count += len(tokens)
+        term_dict = update_dictionary(term_dict, tokens, snippet['text'].encode('ascii', "ignore"))
+        snippet_text_dict[snippet['text'].encode('ascii', "ignore")] = snippet
+
+    score_list = dict()
+    N = len(snippets)
+    avg_doc_length = float(total_token_count) / N
+
+    for snippet in snippets:
+        tokens = get_tokens(snippet['text'])
+        # score = get_BM25_score(term_dict, question_tokens, snippet['text'].encode('ascii', "ignore"), tokens, N, avg_doc_length)
+        score = get_Indri_Score(term_dict, question_tokens, snippet['text'].encode('ascii', "ignore"), len(tokens))
+        score_list[snippet['text'].encode('ascii', "ignore")] = score
+
+    sorted_d = sorted(score_list.items(), key=operator.itemgetter(1), reverse=True)
+    for i in range(len(sorted_d)):
+        ranked_snippets.append(snippet_text_dict[sorted_d[i][0]])
+
+    return ranked_snippets
 
 
 def get_score_list(filepath, algo='BM25'):
@@ -144,12 +192,13 @@ def get_score_list(filepath, algo='BM25'):
 
 def get_tokens(text):
     text = text.lower()
+    text = text.encode('ascii', "ignore")
     sentences = sent_tokenize(text)
     tokens = []
     for sentence in sentences:
         words = word_tokenize(sentence)
         filtered_words = [w for w in words if not w in stop_words]
-        words = [w.lower() for w in filtered_words if w.isalpha()]
+        words = [w for w in filtered_words if w.isalpha()]
         tokens.extend(words)
     return tokens
 

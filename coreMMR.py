@@ -21,7 +21,7 @@ class CoreMMR(BiRanker):
         selectedSentences = []
         snippets = question['snippets']
         # This is the class method from the BiRanker that is used to compute the positional scores of the sentences in the snippets.
-        pos_dict = {}
+        pos_dict = self.computePositions(snippets)
         self.beta = 0
         best = []
         current_best = None
@@ -41,17 +41,17 @@ class CoreMMR(BiRanker):
                     if self.beta != 0:
                         try:
                             current_sent_sim = (self.beta * similarityInstance.calculateSimilarity()) + (
-                            (1 - self.beta) * self.pos_dict[sentence])
+                            (1 - self.beta) * pos_dict[sentence])
                         except:
                             logger.info(
                                 'Looking for Sentence: ' + str(sentence.lstrip().rstrip()) + 'in positional dictionary')
                             current_sent_sim = (self.beta * similarityInstance.calculateSimilarity()) + (
-                            (1 - self.beta) * self.pos_dict[sentence.lstrip().rstrip()])
+                            (1 - self.beta) * pos_dict[sentence.lstrip().rstrip()])
                     else:  # since the value of beta is set to 0
                         current_sent_sim = similarityInstance.calculateSimilarity()
                     if current_sent_sim > max_sent_sim:
                         max_sent_sim = current_sent_sim
-                        # equation for mmr to balance between similarity with already selected sentences and similarity with question
+                # equation for mmr to balance between similarity with already selected sentences and similarity with question
                 final_sim = ((1 - self.alpha) * ques_sim) - (self.alpha * max_sent_sim)
                 if final_sim > best_sim:
                     best_sim = final_sim

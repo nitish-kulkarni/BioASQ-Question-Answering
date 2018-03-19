@@ -39,6 +39,8 @@ from pymetamap import MetaMap
 
 import question_classifier
 
+import retrieval_model as rm
+
 from PyRouge import pyrouge as Pyrouge
 
 '''
@@ -160,6 +162,9 @@ class Pipeline(object):
             modifiedQuestion['body'] = expandedQuestion
             logger.info('Updated the question with expander output...')
 
+            custom_ranked_snippets = rm.get_ranked_snippets(question['snippets'], question['body'])
+            question['snippets'] = custom_ranked_snippets
+
             #EXECUTION OF ONE OF BIRANKERS
             #rankedSentencesList = self.biRankerInstance.getRankedList(modifiedQuestion)
             rankedSentencesList = self.biRankerInstance.getRankedList(question)
@@ -181,7 +186,6 @@ class Pipeline(object):
             try:
                 orderedList = self.orderInstance.orderSentences(rankedSentencesListOriginal, rankedSnippets, tiler_info)
             except:
-                print 'bla'
                 print question['body']
             fusedList = self.fusionInstance.tileSentences(orderedList, 200)
             logger.info('Tiling sentences to get alternative summary...')
@@ -199,12 +203,12 @@ class Pipeline(object):
 
             #logger.info('Choosing better summary ...')
 
-            if pred_cat == 'summary':
-                score = rouge.rouge_l([finalSummary.encode('ascii')], [str(question['ideal_answer']).encode('ascii')])
-                count += 1
-                avg_prec += score[0]
-                avg_recall += score[1]
-                avg_f += score[1]
+            # if pred_cat == 'summary':
+            #     score = rouge.rouge_l([finalSummary.encode('ascii')], [str(question['ideal_answer']).encode('ascii')])
+            #     count += 1
+            #     avg_prec += score[0]
+            #     avg_recall += score[1]
+            #     avg_f += score[1]
 
             question['ideal_answer'] = finalSummary
 
@@ -212,16 +216,16 @@ class Pipeline(object):
             allAnswerQuestion.append(AnswerQuestion)
             logger.info('Inserted ideal answer into the json dictionary')
         # metamapInstance.stopMetaMap()
-        avg_prec /= count
-        avg_recall /= count
-        avg_f /= count
-        print 'My results '
-        print avg_prec, avg_recall, avg_f
+        # avg_prec /= count
+        # avg_recall /= count
+        # avg_f /= count
+        # print 'My results '
+        # print avg_prec, avg_recall, avg_f
         return allAnswerQuestion
 
 if __name__ == '__main__':
     # filePath = sys.argv[1]
-    filePath = "./input/BioASQ-trainingDataset5b.json"
+    filePath = "./input/phaseB_5b_05.json"
     expanderInstance = NoExpander()
     biRankerInstance = CoreMMR()
     # biRankerInstance = BM25Ranker()
@@ -235,6 +239,6 @@ if __name__ == '__main__':
     #pipelineInstance = Pipeline(filePath)
     idealAnswerJson = {}
     idealAnswerJson['questions'] = pipelineInstance.getSummaries()
-    with open('ordered_fusion.json', 'w') as outfile:
+    with open('ordered_fusion_indri_latest_5b_test.json', 'w') as outfile:
         json.dump(idealAnswerJson, outfile)
     print json.dumps(idealAnswerJson)
