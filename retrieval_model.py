@@ -1,4 +1,6 @@
 import json
+import re
+
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 import numpy as np
@@ -189,7 +191,8 @@ def get_tokens(text):
     for sentence in sentences:
         words = word_tokenize(sentence)
         filtered_words = [w for w in words if not w in stop_words]
-        words = [w for w in filtered_words if w.isalpha()]
+        words = [re.sub(r'\W+', '', w) for w in filtered_words]
+        words = [w for w in words if w != '']
         tokens.extend(words)
     return tokens
 
