@@ -1,4 +1,6 @@
 import json
+import re
+
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 import numpy as np
@@ -49,9 +51,9 @@ class Indri(object):
         return score
 
     def get_individual_term_score(self, inverted_index, token, doc_length, docId, N):
-        p_mle = get_mle_from_corpus(inverted_index, token, N)
+        p_mle = 1.0 * max(np.sum(inverted_index.get(token, {}).values()), 1) / N
         score = self.lambda_ * p_mle
-        score += (1 - self.lambda_) * (inverted_index[token].get(docId, 0) + self.mu * p_mle)/ (doc_length + self.mu)
+        score += (1 - self.lambda_) * (inverted_index.get(token, {}).get(docId, 0) + self.mu * p_mle)/ (doc_length + self.mu)
         return score
 
 
@@ -87,15 +89,6 @@ def get_average_sentence_length(index, N):
             total_terms += index[term][doc]
 
     return float(total_terms)/N
-
-
-
-def get_mle_from_corpus(inverted_index, token, N):
-    count = 0
-    for i, doc in enumerate(inverted_index.get(token, [])):
-        count += inverted_index[token].get(doc, 0)
-    return float(count)/N
-
 
 def get_docID(snippet):
     doc_string = snippet['document']
@@ -213,7 +206,8 @@ def get_tokens(text):
     for sentence in sentences:
         words = word_tokenize(sentence)
         filtered_words = [w for w in words if not w in stop_words]
-        words = [w for w in filtered_words if w.isalpha()]
+        words = [re.sub(r'\W+', '', w) for w in filtered_words]
+        words = [w for w in words if w != '']
         tokens.extend(words)
     return tokens
 
@@ -224,5 +218,5 @@ def main():
     print('retrieved results')
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

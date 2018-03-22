@@ -18,7 +18,7 @@ def get_sentences(snippets):
     sentences = []
     snippetsText = []
     for snippet in snippets:
-        text = unicode(snippet["text"]).encode("ascii", "ignore")
+        text = unicode(snippet.text).encode("ascii", "ignore")
         snippetsText.append(text)
         if text == "":
             continue
@@ -74,5 +74,5 @@ def main():
         score = getScoreList(question['body'], question['snippets'])
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
