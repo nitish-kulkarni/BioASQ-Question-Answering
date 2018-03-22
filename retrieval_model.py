@@ -55,6 +55,21 @@ class Indri(object):
         return score
 
 
+def get_sentences(snippets):
+    sentences = []
+    snippetsText = []
+    for snippet in snippets:
+        text = unicode(snippet["text"]).encode("ascii", "ignore")
+        snippetsText.append(text)
+        if text == "":
+            continue
+        try:
+            sentences += sent_tokenize(text)
+        except:
+            sentences += text.split(". ")  # Notice the space after the dot
+    return sentences
+
+
 def preprocess_sentences(sentences):
     cleaned_sentences = set()
     for sentence in sentences:

@@ -2,5 +2,5 @@
 *.pyc
 *.log
 *.json
-PyRogue/*.pyc
+PyRouge/*.py
 *.txt
