@@ -10,11 +10,10 @@ stop_words = set(stopwords.words('english'))
 
 
 class BM25(object):
-    def __init__(self, k1, k3, b, N):
+    def __init__(self, k1, k3, b):
         self.k1 = k1
         self.k3 = k3
         self.b = b
-        self.N = N
 
     def get_score(self, term_dict, common_tokens, N, docId, average_doc_length):
         score = 0
@@ -121,7 +120,7 @@ def get_doc_length(term_dict, docId):
 
 def get_BM25_score(term_dict, question_tokens, docId, tokens, N, avg_doc_length):
     common_tokens = set(question_tokens).intersection(set(tokens))
-    bm25_model = BM25(k1=1.2, k3=0, b=0.75, N=N)
+    bm25_model = BM25(k1=1.2, k3=0, b=0.75)
     score = bm25_model.get_score(term_dict, common_tokens, N, docId, avg_doc_length)
     return score
 
@@ -212,9 +211,46 @@ def get_tokens(text):
     return tokens
 
 
+def create_index(sentences):
+    term_dict = dict()
+
+    for i, sentence in enumerate(sentences):
+        tokens = get_tokens(sentence)
+        term_dict = update_dictionary(term_dict, tokens, i)
+
+    return term_dict
+
+# current
+
+def get_ranked_sentences(question_text, sentences, retrieval_algo):
+
+    sentences = preprocess_sentences(sentences)
+    N = len(sentences)
+    inverted_index = create_index(sentences)
+    avg_length = get_average_sentence_length(inverted_index, N)
+    question_tokens = get_tokens(question_text)
+
+    scorelist = dict()
+
+    for i, sentence in enumerate(sentences):
+        sentence_tokens = get_tokens(sentence)
+        if retrieval_algo == 'BM25':
+            score = get_BM25_score(term_dict=inverted_index, question_tokens=question_tokens,
+                                  docId=i, tokens=sentence_tokens, N=N, avg_doc_length=avg_length)
+
+        if retrieval_algo == 'Indri':
+            pass
+
+        scorelist[sentence] = score
+
+    sorted_sentences = sorted(scorelist.items(), key=operator.itemgetter(1), reverse=True)
+
+    return sorted_sentences
+
+
 def main():
     filepath = './input/toydata.json'
-    score_list = get_score_list(filepath, 'BM25')
+    # score_list = get_score_list(filepath, 'BM25')
     print('retrieved results')
 
 
