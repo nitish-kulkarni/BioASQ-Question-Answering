@@ -14,6 +14,7 @@ class LeToR(object):
         sentences = RM.get_sentences(question['snippets'])
         self.sentences = RM.preprocess_sentences(sentences)
         self.question_type = question['type']
+        self.question_text = unicode(question['body']).encode("ascii", "ignore")
 
 
 def preprocess_data(data):
@@ -42,20 +43,19 @@ def filter_summary_type_questions(data):
 
 
 def create_feature_vectors(question):
-    snippets = question['snippets']
-    sentences = RM.get_sentences(snippets)
 
-    sentences = set(sentences)
+    sentences = set(question.sentences)
     feature_vectors = []
 
     # ranked sentences also gives a score which can be used as feature
 
-    ranked_sentences_bm25 = RM.get_ranked_sentences(question_text=question['body'], sentences=sentences, retrieval_algo='BM25')
+    ranked_sentences_bm25 = RM.get_ranked_sentences(question_text=question.question_text, sentences=sentences,
+                                                    retrieval_algo='BM25')
 
     # ranked sentences also gives a score which can be used as feature
 
-    ranked_sentences_Indri = RM.get_ranked_sentences(question_text=question['body'], sentences=sentences,
-                                                    retrieval_algo='Indri')
+    ranked_sentences_Indri = RM.get_ranked_sentences(question_text=question.question_text, sentences=sentences,
+                                                     retrieval_algo='Indri')
 
     # TO DO @Gabe, above results can be used for LeToR
 
@@ -76,6 +76,10 @@ def main():
     fp.close()
 
     processed_data = preprocess_data(data)
+    for i, processed_question in enumerate(processed_data):
+        if len(processed_question.sentences) == 0:
+            continue
+        vv = create_feature_vectors(processed_question)
 
     print ('Done Preprocessing !!')
 

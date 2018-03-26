@@ -77,7 +77,6 @@ def preprocess_sentences(sentences):
         s = sentence.rstrip().lstrip()
         s = s.replace('.', '')
         cleaned_sentences.add(s)
-
     return list(cleaned_sentences)
 
 
@@ -225,7 +224,7 @@ def create_index(sentences):
 
 def get_ranked_sentences(question_text, sentences, retrieval_algo):
 
-    sentences = preprocess_sentences(sentences)
+    # sentences = preprocess_sentences(sentences)
     N = len(sentences)
     inverted_index = create_index(sentences)
     avg_length = get_average_sentence_length(inverted_index, N)
