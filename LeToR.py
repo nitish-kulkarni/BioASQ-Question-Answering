@@ -19,7 +19,7 @@ class LeToR(object):
 def preprocess_data(data):
 
     processed_data = []
-    for (i, question) in enumerate(data['questions']):
+    for (i, question) in enumerate(data):
         processed_question = LeToR(question)
         processed_data.append(processed_question)
 
@@ -35,7 +35,7 @@ def get_golden_ranking(question):
 
 
 def filter_summary_type_questions(data):
-    fp = open('train_5b_summary.json', 'wb')
+    fp = open('./input/train_5b_summary.json', 'wb')
     summary_questions = list(filter(lambda x: x['type'] == 'summary', data['questions']))
     json.dump(summary_questions, fp)
     fp.close()
