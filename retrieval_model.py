@@ -224,7 +224,6 @@ def create_index(sentences):
 
 def get_ranked_sentences(question_text, sentences, retrieval_algo):
 
-    # sentences = preprocess_sentences(sentences)
     N = len(sentences)
     inverted_index = create_index(sentences)
     avg_length = get_average_sentence_length(inverted_index, N)
@@ -232,6 +231,7 @@ def get_ranked_sentences(question_text, sentences, retrieval_algo):
 
     scorelist = dict()
     bm25_model = BM25(k1=1.2, k3=0, b=0.75)
+    indri_model = Indri(lambda_=0.75, mu=5000)
 
     for i, sentence in enumerate(sentences):
         sentence_tokens = get_tokens(sentence)
@@ -242,7 +242,8 @@ def get_ranked_sentences(question_text, sentences, retrieval_algo):
                                          average_doc_length=avg_length, docId=i)
 
         if retrieval_algo == 'Indri':
-            pass
+            score = indri_model.get_score(inverted_index=inverted_index, question_tokens=question_tokens,
+                                          docId=i, doc_length=len(sentence_tokens), N=N)
 
         scorelist[sentence] = score
 

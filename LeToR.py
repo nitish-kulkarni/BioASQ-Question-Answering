@@ -28,9 +28,8 @@ def preprocess_data(data):
 
 
 def get_golden_ranking(question):
-    ideal_answer = question['ideal_answer']
-    sentences = RM.get_sentences(question['snippets'])
-    sentences = RM.preprocess_sentences(sentences)
+    ideal_answer = question.ideal_answer
+    sentences = question.sentences
     ranked_sentences = RM.get_ranked_sentences(question_text=ideal_answer, sentences=sentences, retrieval_algo='BM25')
     return ranked_sentences
 
