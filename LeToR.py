@@ -28,7 +28,7 @@ def preprocess_data(data):
 
 
 def get_golden_ranking(question):
-    ideal_answer = question.ideal_answer
+    ideal_answer = unicode(question.ideal_answer[0]).encode("ascii", 'ignore')
     sentences = question.sentences
     ranked_sentences = RM.get_ranked_sentences(question_text=ideal_answer, sentences=sentences, retrieval_algo='BM25')
     return ranked_sentences
@@ -79,6 +79,7 @@ def main():
         if len(processed_question.sentences) == 0:
             continue
         vv = create_feature_vectors(processed_question)
+        d = get_golden_ranking(processed_question)
 
     print ('Done Preprocessing !!')
 
