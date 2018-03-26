@@ -30,7 +30,7 @@ def get_golden_ranking(question):
     ideal_answer = question['ideal_answer']
     sentences = RM.get_sentences(question['snippets'])
     sentences = RM.preprocess_sentences(sentences)
-    ranked_sentences = RM.get_ranked_sentences(question_text= ideal_answer, sentences=sentences, retrieval_algo='BM25')
+    ranked_sentences = RM.get_ranked_sentences(question_text=ideal_answer, sentences=sentences, retrieval_algo='BM25')
     return ranked_sentences
 
 
@@ -39,6 +39,27 @@ def filter_summary_type_questions(data):
     summary_questions = list(filter(lambda x: x['type'] == 'summary', data['questions']))
     json.dump(summary_questions, fp)
     fp.close()
+
+
+def create_feature_vectors(question):
+    snippets = question['snippets']
+    sentences = RM.get_sentences(snippets)
+
+    sentences = set(sentences)
+    feature_vectors = []
+
+    # ranked sentences also gives a score which can be used as feature
+
+    ranked_sentences_bm25 = RM.get_ranked_sentences(question_text=question['body'], sentences=sentences, retrieval_algo='BM25')
+
+    # ranked sentences also gives a score which can be used as feature
+
+    ranked_sentences_Indri = RM.get_ranked_sentences(question_text=question['body'], sentences=sentences,
+                                                    retrieval_algo='Indri')
+
+    # TO DO @Gabe, above results can be used for LeToR
+
+    return feature_vectors
 
 
 def main():

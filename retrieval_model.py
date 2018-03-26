@@ -220,6 +220,7 @@ def create_index(sentences):
 
     return term_dict
 
+
 # current
 
 def get_ranked_sentences(question_text, sentences, retrieval_algo):
@@ -231,12 +232,15 @@ def get_ranked_sentences(question_text, sentences, retrieval_algo):
     question_tokens = get_tokens(question_text)
 
     scorelist = dict()
+    bm25_model = BM25(k1=1.2, k3=0, b=0.75)
 
     for i, sentence in enumerate(sentences):
         sentence_tokens = get_tokens(sentence)
+        score = 0.0
         if retrieval_algo == 'BM25':
-            score = get_BM25_score(term_dict=inverted_index, question_tokens=question_tokens,
-                                  docId=i, tokens=sentence_tokens, N=N, avg_doc_length=avg_length)
+            common_tokens = set(question_tokens).intersection(set(sentence_tokens))
+            score = bm25_model.get_score(term_dict=inverted_index, common_tokens=common_tokens, N=N,
+                                         average_doc_length=avg_length, docId=i)
 
         if retrieval_algo == 'Indri':
             pass
@@ -244,7 +248,6 @@ def get_ranked_sentences(question_text, sentences, retrieval_algo):
         scorelist[sentence] = score
 
     sorted_sentences = sorted(scorelist.items(), key=operator.itemgetter(1), reverse=True)
-
     return sorted_sentences
 
 
