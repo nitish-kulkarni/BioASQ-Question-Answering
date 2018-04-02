@@ -76,8 +76,9 @@ class DataLoader():
             with open(self.ner_cache_filename, 'r') as fp:
                 ner_dict = json.load(fp)
             for q in questions:
-                if q.qid in ner_dict:
-                    q.ner_entities = ner_dict[q.qid]
+                key = str(q.qid)
+                if key in ner_dict:
+                    q.ner_entities = ner_dict[key]
         else:
             _load_ner(questions, pubtator.get_bio_concepts_multiple, 'PubTator', multiple=True)
             _load_ner(questions, NER_tagger_multiple, 'Lingpipe', multiple=True, snippets=True)
