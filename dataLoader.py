@@ -141,13 +141,13 @@ def _load_ner(questions, tagger, tagger_name, multiple=False, snippets=False):
     print('Finished loading {0} entiies..'.format(tagger_name))
 
 def _entities_from_tagger(tagger, doc_id, doc_text):
-    return [e['entity'].lower() for e in tagger(doc_id, doc_text)]
+    return [e for e in tagger(doc_id, doc_text)]
 
 def _unique(entities):
     types = {}
     for e in entities:
-        types[e['entiry'].lower()] = e['type']
-    return [{'entiry': k, 'type': v} for k, v in types.items()]
+        types[e['entity'].lower()] = e['type']
+    return [{'entity': k, 'type': v} for k, v in types.items()]
 
 def _flatten(l):
     if not isinstance(l, list):
@@ -165,5 +165,4 @@ def _ner_dict(questions):
     d = {}
     for q in questions:
         d[q.qid] = q.ner_entities
-    
-    return q
+    return d
