@@ -113,7 +113,7 @@ class Net(nn.Module):
  
         return x
 
-def train(train_data, train_outputs, test_data):
+def train(train_data, train_outputs):
 	net = Net()
 	if use_cuda:
 		net = nn.DataParallel(net) #Attempt at multi GPU
@@ -210,7 +210,9 @@ def main():
 	Process data and feed to train
 	'''
 
-	train(train_data, train_outputs, test_data)
+	X = np.load('data/pubmed_vectors_train.npy')
+	Y = np.load('data/glove_vectors_train.npy')
+	train(X, Y)
 
 if __name__ == "__main__":
     main()
