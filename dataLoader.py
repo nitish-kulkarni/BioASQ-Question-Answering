@@ -29,6 +29,10 @@ class Question():
         self.ner_entities = []
         self.V_snippets = _vocab_size([i.text for i in snippets])
 
+        # positive assertion for the question
+        self.assertion_pos = None
+        self.assertion_neg = None
+
     def get_ner_entity_list(self):
         return [e['entity'] for e in self.ner_entities]
 
@@ -58,6 +62,13 @@ class DataLoader():
 
         _ensure_path('nerCache')
         self.ner_cache_filename = 'nerCache/%s.json' % self.name
+
+    def __getitem__(self, idx):
+        return self.questions[idx]
+
+    # should be the same as __getitem__
+    def question_from_qid(self, qid):
+        return [q for q in self.questions if q.qid == qid][0]
 
     def get_DF(self):
         return pd.DataFrame(self.data)

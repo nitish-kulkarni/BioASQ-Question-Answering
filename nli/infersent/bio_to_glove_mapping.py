@@ -12,6 +12,7 @@ import math
 import pdb
 from tqdm import tqdm
 from sklearn.utils import shuffle
+import numpy as np
 
 parser = argparse.ArgumentParser(description='Bio embeddings to glove transoformation Network')
 parser.add_argument('--batch-size', type=int, default=100, metavar='N',
