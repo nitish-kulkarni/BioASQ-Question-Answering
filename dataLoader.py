@@ -11,6 +11,21 @@ from ner.lingpipe import NER_tagger_multiple
 import re
 import os
 
+QUESTIONS = 'questions'
+DOCUMENTS = 'documents'
+SNIPPETS = 'snippets'
+IDEAL_ANSWER = 'ideal_answer'
+EXACT_ANSWER = 'exact_answer'
+BODY = 'body'
+TYPE = 'type'
+
+NER_ENTITIES = 'ner_entities'
+
+YESNO_TYPE = 'yesno'
+LIST_TYPE = 'list'
+FACTOID_TYPE = 'factoid'
+SUMMARY_TYPE = 'summary'
+
 class Question():
 
     def __init__(self,
@@ -61,7 +76,7 @@ class DataLoader():
     def __init__(self, input_path):
 
         with open(input_path, 'r') as fp:
-            self.data = json.load(fp)['questions']
+            self.data = json.load(fp)[QUESTIONS]
         self.questions = self._get_questions()
         self.name = input_path.split('/')[-1].strip('.json')
 
@@ -83,8 +98,8 @@ class DataLoader():
 
     def load_ner_entities(self):
 
-        list_type = self.get_questions_of_type('list')
-        factoid_type = self.get_questions_of_type('factoid')
+        list_type = self.get_questions_of_type(LIST_TYPE)
+        factoid_type = self.get_questions_of_type(FACTOID_TYPE)
         questions = list_type + factoid_type
 
         if os.path.exists(self.ner_cache_filename):
@@ -105,6 +120,22 @@ class DataLoader():
             with open(self.ner_cache_filename, 'w') as fp:
                 json.dump(_ner_dict(questions), fp)
 
+    def save_ners(self, output_file):
+        data = {}
+        questions = []
+        self.load_ner_entities()
+        for q in self.questions:
+            elem = {}
+            elem[NER_ENTITIES] = q.ner_entities
+            q[BODY] = q.question
+            q[TYPE] = q.type
+            q[EXACT_ANSWER] = q.exact_answer_ref
+            q[IDEAL_ANSWER] = q.ideal_answer_ref
+            questions.append(elem)
+        data[QUESTIONS] = questions
+        with open(output_file, 'w') as fp:
+            json.dump(data, fp, indent=4, sort_keys=True)
+
     def _get_questions(self):
         questions = []
         for qid, question in enumerate(self.data):
@@ -114,12 +145,12 @@ class DataLoader():
             questions.append(
                 Question(
                     qid,
-                    question['type'],
-                    question['body'],
+                    question[TYPE],
+                    question[BODY],
                     documents,
                     snippets,
-                    ideal_answer_ref=question.get('ideal_answer', None),
-                    exact_answer_ref=question.get('exact_answer', None)
+                    ideal_answer_ref=question.get(IDEAL_ANSWER, None),
+                    exact_answer_ref=question.get(EXACT_ANSWER, None)
                 )
             )
 
