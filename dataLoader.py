@@ -12,21 +12,7 @@ import ner.pubtator as pubtator
 from ner.lingpipe import NER_tagger_multiple
 from nltk.tokenize import sent_tokenize
 
-QUESTIONS = 'questions'
-DOCUMENTS = 'documents'
-SNIPPETS = 'snippets'
-IDEAL_ANSWER = 'ideal_answer'
-EXACT_ANSWER = 'exact_answer'
-BODY = 'body'
-TYPE = 'type'
-
-NER_ENTITIES = 'ner_entities'
-SNIPPET_SENTENCES = 'snippet_sentences'
-
-YESNO_TYPE = 'yesno'
-LIST_TYPE = 'list'
-FACTOID_TYPE = 'factoid'
-SUMMARY_TYPE = 'summary'
+from constants import *
 
 class Question():
 
@@ -58,6 +44,9 @@ class Question():
 
     def get_ner_entity_list(self):
         return [e['entity'] for e in self.ner_entities]
+
+    def ranked_sentences():
+
 
 class Snippet():
 
@@ -115,8 +104,8 @@ class DataLoader():
                 if key in ner_dict:
                     q.ner_entities = ner_dict[key]
         else:
-            _load_ner(questions, pubtator.get_bio_concepts_multiple, 'PubTator', multiple=True)
-            _load_ner(questions, NER_tagger_multiple, 'Lingpipe', multiple=True, snippets=True)
+            _load_ner(questions, pubtator.get_bio_concepts_multiple, PUBTATOR, multiple=True)
+            _load_ner(questions, NER_tagger_multiple, LINGPIPE, multiple=True, snippets=True)
             for q in questions:
                 q.ner_entities = _unique(q.ner_entities)
 
@@ -190,7 +179,7 @@ def _load_ner(questions, tagger, tagger_name, multiple=False, snippets=False):
             continue
         new_entities = []
         for entity in entities:
-            entity['source'] = tagger_name
+            entity[SOURCE] = tagger_name
             new_entities.append(entity)
         question.ner_entities += new_entities
     print('Failed to load {0} entities for {1} questions'.format(tagger_name, missed))
@@ -202,10 +191,10 @@ def _entities_from_tagger(tagger, doc_id, doc_text):
 def _unique(entities):
     types = {}
     for e in entities:
-        if 'entity' not in e or 'type' not in e:
+        if ENTITY not in e or TYPE not in e:
             continue
-        types[e['entity'].lower()] = (e['type'], e['source'])
-    return [{'entity': k, 'type': v, 'source': s} for k, (v, s) in types.items()]
+        types[e[ENTITY].lower()] = (e[TYPE], e[SOURCE])
+    return [{ENTITY: k, TYPE: v, SOURCE: s} for k, (v, s) in types.items()]
 
 def _flatten(l):
     if not isinstance(l, list):

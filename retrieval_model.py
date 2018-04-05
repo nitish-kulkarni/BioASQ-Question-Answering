@@ -5,6 +5,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 import numpy as np
 import operator
+import constants as C
 
 stop_words = set(stopwords.words('english'))
 
@@ -223,7 +224,6 @@ def create_index(sentences):
 # current
 
 def get_ranked_sentences(question_text, sentences, retrieval_algo):
-
     N = len(sentences)
     inverted_index = create_index(sentences)
     avg_length = get_average_sentence_length(inverted_index, N)
@@ -236,18 +236,18 @@ def get_ranked_sentences(question_text, sentences, retrieval_algo):
     for i, sentence in enumerate(sentences):
         sentence_tokens = get_tokens(sentence)
         score = 0.0
-        if retrieval_algo == 'BM25':
+        if retrieval_algo == C.BM25:
             common_tokens = set(question_tokens).intersection(set(sentence_tokens))
             score = bm25_model.get_score(term_dict=inverted_index, common_tokens=common_tokens, N=N,
                                          average_doc_length=avg_length, docId=i)
 
-        if retrieval_algo == 'Indri':
+        if retrieval_algo == C.INDRI:
             score = indri_model.get_score(inverted_index=inverted_index, question_tokens=question_tokens,
                                           docId=i, doc_length=len(sentence_tokens), N=N)
 
         scorelist[sentence] = score
 
-    sorted_sentences = sorted(scorelist.items(), key=operator.itemgetter(1), reverse=True)
+        sorted_sentences = sorted(scorelist.items(), key=operator.itemgetter(1), reverse=True)
     return sorted_sentences
 
 
