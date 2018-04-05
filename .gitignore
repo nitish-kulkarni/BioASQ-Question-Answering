@@ -1,6 +1,5 @@
 .idea/*
 *.pyc
 *.log
-*.json
 PyRouge/*.py
 *.txt
