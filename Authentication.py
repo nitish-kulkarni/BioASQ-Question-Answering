@@ -40,8 +40,3 @@ class Authentication:
      r = requests.post(tgt,data=params,headers=h)
      st = r.text
      return st
-   
-   
-   
-
-

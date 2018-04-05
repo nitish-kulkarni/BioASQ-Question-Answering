@@ -224,6 +224,7 @@ class Pipeline(object):
         return allAnswerQuestion
 
 if __name__ == '__main__':
+
     # filePath = sys.argv[1]
     filePath = "./input/phaseB_5b_05.json"
     expanderInstance = NoExpander()
