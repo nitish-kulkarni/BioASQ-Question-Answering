@@ -1,7 +1,5 @@
-from data import train_rank, test_rank
 import svmlight
 import operator
-import cPickle as pickle
 
 def save_object(filename, obj):
     with open(filename, 'wb') as output:
