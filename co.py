@@ -40,7 +40,7 @@ def get_features(question, ranked_sentences):
 
 def main():
     ranker = SVMRank()
-    file_name = 'data/ners_BioASQ-trainingDataset6b.json'
+    file_name = 'input/BioASQ-trainingDataset6b.json'
     data = DataLoader(file_name)
     data.load_ner_entities()
     questions = data.get_questions_of_type(C.FACTOID_TYPE)
