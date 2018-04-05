@@ -11,7 +11,7 @@ from tqdm import tqdm
 import ner.pubtator as pubtator
 from ner.lingpipe import NER_tagger_multiple
 from nltk.tokenize import sent_tokenize
-
+import retrieval_model
 from constants import *
 
 class Question():
@@ -45,8 +45,21 @@ class Question():
     def get_ner_entity_list(self):
         return [e['entity'] for e in self.ner_entities]
 
-    def ranked_sentences():
+    def ranked_sentences(self):
+        scores = {}
+        for sentence, score in retrieval_model.get_ranked_sentences(self.question, self.snippet_sentences, BM25):
+            scores[sentence] = [score]
+        for sentence, score in retrieval_model.get_ranked_sentences(self.question, self.snippet_sentences, INDRI):
+            scores[sentence].append(score)
 
+        all_sentences = [(bm25_score, indri_score, s) for s, [bm25_score, indri_score] in scores.items()]
+        all_sentences = sorted(all_sentences, reverse=True)
+        sentences = [{
+            TEXT: s,
+            BM25: bm25_score,
+            INDRI: indri_score
+        } for (bm25_score, indri_score, s) in all_sentences]
+        return sentences
 
 class Snippet():
 
@@ -224,4 +237,6 @@ def _get_sentences(snippets):
             sentences += sent_tokenize(text)
         except:
             sentences += text.split(". ")  # Notice the space after the dot
+    sentences = np.unique(sentences).tolist()
+    sentences = [i.strip().strip('.') for i in sentences]
     return sentences
