@@ -12,24 +12,21 @@ import math
 import pdb
 from tqdm import tqdm
 from sklearn.utils import shuffle
-import numpy as np
 
 parser = argparse.ArgumentParser(description='Bio embeddings to glove transoformation Network')
 parser.add_argument('--batch_size', type=int, default=100, metavar='N',
                     help='input batch size for training (default: 64)')
-parser.add_argument('--test_batch_size', type=int, default=100, metavar='N',
+parser.add_argument('--test_batch_size', type=int, default=200, metavar='N',
                     help='input batch size for testing (default: 1000)')
 parser.add_argument('--epochs', type=int, default=1000, metavar='N',
                     help='number of epochs to train (default: 100)')
 parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                     help='learning rate (default: 0.001)')
-parser.add_argument('--drop', type=float, default=0.3, metavar='LR',
-                    help='dropout (default: 0.3)')
 args = parser.parse_args()
 
 #Use CUDNN
 cudnn.benchmark = True
-use_cuda = True
+use_cuda = False
 
 from torch.autograd import Variable
 import torch.nn as nn
@@ -81,23 +78,16 @@ class Net(nn.Module):
 
         #Input 1X1X512
         self.fc1 = nn.Linear(bio_embedding_dim, 512)
-        self.drop1 = nn.Dropout(p=args.drop)
+        #self.drop2 = nn.Dropout(p=0.5)
         self.bn1 = nn.BatchNorm1d(512)
-        
         self.fc2 = nn.Linear(512, 512)
-        self.drop2 = nn.Dropout(p=args.drop)
         self.bn2 = nn.BatchNorm1d(512)
-
         self.fc2_1 = nn.Linear(512, 512)
-        self.drop2_1 = nn.Dropout(p=args.drop)
         self.bn2_1 = nn.BatchNorm1d(512)
-        self.fc2_2 = nn.Linear(512, 512)
-        self.fc2_3 = nn.Linear(512, 512)
-        self.fc2_4 = nn.Linear(512, 512)
-        self.fc2_5 = nn.Linear(512, 512)
-        self.fc2_6 = nn.Linear(512, 512)
-        self.fc2_7 = nn.Linear(512, 512)
-        self.drop3 = nn.Dropout(p=args.drop)
+        #self.fc2_2 = nn.Linear(128, 128)
+        #self.fc2_3 = nn.Linear(128, 128)
+        #self.fc2_4 = nn.Linear(128, 128)
+        #self.drop3 = nn.Dropout(p=0.5)
         self.fc3 = nn.Linear(512, glove_embedding_dim)
 #        self.softmax = nn.Softmax()
 
@@ -122,25 +112,14 @@ class Net(nn.Module):
     def forward(self, x):
 
 #        x = self.fc1(x)
-#        x = F.elu(self.bn1(self.fc1(x))) #Relu here added post assignment
-#        x = self.drop1(x)
-#        x = F.elu(self.bn2(self.fc2(x))) #Relu here added post assignment
-#        x = self.drop2(x)
-#        x = F.elu(self.bn2_1(self.fc2_1(x)))
-#        x = self.drop2_1(x)
+        x = F.elu(self.bn1(self.fc1(x))) #Relu here added post assignment
+        #x = self.drop2(x)
+        x = F.elu(self.bn2(self.fc2(x))) #Relu here added post assignment
+    
+        x = F.elu(self.bn2_1(self.fc2_1(x)))
         #x = F.relu(self.fc2_2(x))
         #x = F.relu(self.fc2_3(x))
         #x = F.relu(self.fc2_4(x))
-
-        x = F.elu(self.fc1(x))
-        x = F.elu(self.fc2(x))
-        x = F.elu(self.fc2_1(x))
-        x = F.elu(self.fc2_2(x))
-        x = F.elu(self.fc2_3(x))
-        x = F.elu(self.fc2_4(x))
-        x = F.elu(self.fc2_5(x))
-        x = F.elu(self.fc2_6(x))
-        x = F.elu(self.fc2_7(x))
 
         #x = self.drop3(x)
         x = self.fc3(x)
@@ -161,7 +140,7 @@ def train(train_data, train_outputs):
 
 	#optimizer = optim.SGD(net.parameters(), lr=0.01 ,momentum = 0.9, weight_decay = 5e-4)
 	optimizer = optim.Adam(net.parameters(), lr=args.lr)
-        print_interval = 300
+        print_interval = 8
 	best_test_loss = 1000000
 	train_data, train_outputs = shuffle(train_data, train_outputs, random_state=0)  # seed 0
 	#Carve 20% val data
@@ -232,10 +211,10 @@ def train(train_data, train_outputs):
 	        torch.save({'epoch': epoch + 1, 'state_dict': net.state_dict(), 'val_loss': val_loss,}, 'bio_to_glove_projection_model_checkpoint.tar')
 	        best_test_loss = val_loss
             
-#        if (epoch + 1) % 100 == 0:
-#            pdb.set_trace()
+        if (epoch + 1) % 100 == 0:
+            pdb.set_trace()
 
-	    if (epoch+1) % 30 == 0: #Halve the learning rate every 30 epochs
+	    if (epoch+1) % 800 == 0: #Halve the learning rate every 30 epochs
 	          for param_group in optimizer.param_groups:
 	            param_group['lr'] /= 2.0
 
@@ -251,9 +230,8 @@ def main():
 
 	#X = np.load('data/pubmed_vectors_train.npy')
 	#Y = np.load('data/glove_vectors_train.npy')
-        X = np.load('data/pubmed_vectors_train.npy')
-        Y = np.load('data/glove_vectors_train.npy')
-    #    pdb.set_trace()
+        X = np.load('data/sample_pubmed_vectors_train.npy')
+        Y = np.load('data/sample_glove_vectors_train.npy')
 	print("Data loaded. Begin Training")
     #    X = X[0:100]
     #    Y = Y[0:100]
