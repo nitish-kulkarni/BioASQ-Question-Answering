@@ -13,7 +13,12 @@ import os
 
 class Question():
 
-    def __init__(self, qid, q_type, question, documents, snippets, ideal_answer_ref=None, exact_answer_ref=None):
+    def __init__(self,
+        qid, q_type, question,
+        documents, snippets,
+        ideal_answer_ref=None,
+        exact_answer_ref=None
+    ):
 
         self.qid = qid
         self.type = q_type
