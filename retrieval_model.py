@@ -224,6 +224,9 @@ def create_index(sentences):
 # current
 
 def get_ranked_sentences(question_text, sentences, retrieval_algo):
+    if len(sentences) == 0:
+        return []
+
     N = len(sentences)
     inverted_index = create_index(sentences)
     avg_length = get_average_sentence_length(inverted_index, N)
