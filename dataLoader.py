@@ -29,6 +29,7 @@ class Question():
         self.documents = documents
         self.snippets = snippets
         self.snippet_sentences = _get_sentences([i.text for i in self.snippets])
+        self.snippet_blob = '. '.join(self.snippet_sentences)
 
         self.ideal_answer = None
         self.exact_answer = None
@@ -36,6 +37,7 @@ class Question():
         self.exact_answer_ref = exact_answer_ref
 
         self.ner_entities = []
+        self.snippet_ner_entities = []
         self.V_snippets = _vocab_size([i.text for i in snippets])
 
         # positive assertion for the question
@@ -44,6 +46,9 @@ class Question():
 
     def get_ner_entity_list(self):
         return [e['entity'] for e in self.ner_entities]
+
+    def _snippet_ner_entities(self):
+        return [e for e in self.ner_entities if e[ENTITY] in self.snippet_blob]
 
     def ranked_sentences(self):
         scores = {}
@@ -125,6 +130,9 @@ class DataLoader():
             print('Saving ner entities to file: %s' % self.ner_cache_filename)
             with open(self.ner_cache_filename, 'w') as fp:
                 json.dump(_ner_dict(questions), fp)
+
+        for q in questions:
+            q.snippet_ner_entities = q._snippet_ner_entities()
 
     def save_ners(self, output_file):
         data = {}

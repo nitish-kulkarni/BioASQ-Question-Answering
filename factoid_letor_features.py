@@ -1,36 +1,36 @@
 """Contains feature functions for LETOR
 """
 import numpy as np
-
+import constants as C
 
 def _get_sentences_with_entity(sentences, entity):
-    filtered_sentences = list(filter(lambda x: entity in x['sentence_body'], sentences))
+    filtered_sentences = list(filter(lambda x: entity.lower() in x[C.TEXT].lower(), sentences))
     return filtered_sentences
 
 
 def _BM25_score(sentences, entity):
     filtered_sentences = _get_sentences_with_entity(sentences, entity)
-    score = reduce(lambda x, y: x['bm25_score']+y['bm25_score'], filtered_sentences)
+    score = np.array([i[C.BM25] for i in filtered_sentences]).sum()
     return score
 
 
 def _indri_score(sentences, entity):
     filtered_sentences = _get_sentences_with_entity(sentences, entity)
-    score = reduce(lambda x, y: x['indri_score']+y['indri_score'], filtered_sentences)
+    score = np.array([i[C.INDRI] for i in filtered_sentences]).sum()
     return score
 
 
 def _num_sentences(sentences, entity):
     filtered_sentences = _get_sentences_with_entity(sentences, entity)
-    return len(filtered_sentences)
+    return float(len(filtered_sentences))
 
 
 def _is_pubtator_type(question, entity_type):
-    return question['type'] == entity_type
+    return float(entity_type.lower() in question.lower())
 
 
 def _is_lingpipe_type(question, entity_type):
-    return question['type'] == entity_type
+    return float(entity_type.lower() in question.lower())
 
 
 def _tf_idf(sentences, entity):
@@ -38,17 +38,17 @@ def _tf_idf(sentences, entity):
     df = len(filtered_sentences)
     N = len(sentences)
     idf = np.log(float(N + 1)/(df + 0.5))
-    ctf = reduce(lambda x, y: x['sentence_body'].count(entity) + y['sentence_body'].count(entity), filtered_sentences)
+    ctf = np.array([i[C.TEXT].count(entity) for i in filtered_sentences]).sum()
 
     return ctf * idf
 
 
 def _is_pubtator_entity(entity):
-    pass
+    return float(entity[C.SOURCE] == C.PUBTATOR)
 
 
 def _is_lingpipe_entity(entity):
-    pass
+    return float(entity[C.SOURCE] == C.LINGPIPE)
 
 
 def all_features(question, sentences, entity):
@@ -68,16 +68,16 @@ def all_features(question, sentences, entity):
     ]
     entity = 'Homo erectus'
     """
-    entity_text = entity['entity']
-    entity_type = entity['type']
-    raw_sentences = [i['sentence_body'] for i in sentences]
+    entity_text = entity[C.ENTITY]
+    entity_type = entity[C.TYPE]
+    raw_sentences = [i[C.TEXT] for i in sentences]
     features = [
         _BM25_score(sentences, entity_text),
         _indri_score(sentences, entity_text),
-        _num_sentences(raw_sentences, entity_text),
+        _num_sentences(sentences, entity_text),
         _is_pubtator_type(question, entity_type),
         _is_lingpipe_type(question, entity_type),
-        _tf_idf(raw_sentences, entity_text),
+        _tf_idf(sentences, entity_text),
         _is_pubtator_entity(entity),
         _is_lingpipe_entity(entity),
     ]

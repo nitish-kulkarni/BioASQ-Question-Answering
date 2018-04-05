@@ -39,10 +39,10 @@ class SVMRank():
 		if not self.weights:
 			self.model = svmlight
 
-	def feed(self, X, y, ids):
+	def feed(self, X, y, i):
 		self.feed_X += X
 		self.feed_y += y
-		self.feed_ids += ids
+		self.feed_ids += [i for k in range(len(y))]
 
 	def train_from_feed(self):
 		formatted_X = []
