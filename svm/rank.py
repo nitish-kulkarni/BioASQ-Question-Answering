@@ -88,9 +88,9 @@ class SVMRank():
 		return self._evaluate(formatted_X)
 
 	def feed_class(self, X, candidates, i):
-		self.feed_X += X
-		self.feed_c += candidates
-		self.feed_ids += [i for k in range(len(X))]
+		self.feed_X = X
+		self.feed_c = candidates
+		self.feed_ids = [i for k in range(len(X))]
 
 	def _evaluate(self, formatted_X):
 
