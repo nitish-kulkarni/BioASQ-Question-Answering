@@ -29,7 +29,7 @@ def gold_candidate_rank(candidates, gold_answers):
     ranks = {}
     scores = sorted(scores, reverse=True)
     for rank, (score, candidate) in enumerate(scores):
-        ranks[candidate] = rank
+        ranks[candidate] = rank + 1
     return [ranks[candidate] for candidate in candidates]
 
 def get_features(question, ranked_sentences):
@@ -51,7 +51,7 @@ def main():
         ranker.feed(X, y, i)
 
     ranker.train_from_feed()
-    ranker.save('weights')
+    ranker.save('weights_2')
 
 if __name__ == "__main__":
     main()

@@ -34,6 +34,7 @@ class SVMRank():
 		self.feed_X = []
 		self.feed_y = []
 		self.feed_ids = []
+		self.feed_c = []
 		self.model = svmlight
 
 		if self.weights:
@@ -86,6 +87,11 @@ class SVMRank():
 
 		return self._evaluate(formatted_X)
 
+	def feed_class(self, X, candidates, i):
+		self.feed_X += X
+		self.feed_c += candidates
+		self.feed_ids += [i for k in range(len(X))]
+
 	def _evaluate(self, formatted_X):
 
 		predictions = self.model.classify(self.current, formatted_X)
@@ -112,6 +118,32 @@ class SVMRank():
 			ranked_dict[doc_id].append((ranked_result[k]['ranking'], ranked_result[k]['ground_truth']))
 
 		return ranked_dict
+
+	def classify_from_feed(self, X, candidates, i):
+
+		self.feed_class(X, candidates, i)
+		formatted_X = []
+		X, candidates, ids = self.feed_X, self.feed_c, self.feed_ids
+
+		for c in range(len(X)):
+			_X = X[c]
+			_id = ids[c]
+			light_format = SVMLightFormat(0, _id, _X).get()
+			formatted_X.append(light_format)
+
+		predictions = self.model.classify(self.current, formatted_X)
+		ranked = []
+
+		for k in range(len(candidates)):
+			candidate = candidates[k]
+			score = predictions[k]
+			ranked.append((candidate, score))
+
+		ranked.sort(key=operator.itemgetter(1))
+
+		return [el[0] for el in ranked]
+
+
 
 	def save(self, name):
 		self.model.write_model(self.current, name)

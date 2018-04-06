@@ -49,11 +49,17 @@ def get_features(question, ranked_sentences):
     candidates = question.snippet_ner_entities
     X = np.array([factoid_letor_features.all_features(question.question, ranked_sentences, candidate) for candidate in candidates])
     y = gold_candidate_rank(candidates, question.exact_answer_ref)
-    return X.tolist(), y
+    return X.tolist(), candidates
+
+def get_only_features(question, ranked_sentences):
+    candidates = question.snippet_ner_entities
+    X = np.array([factoid_letor_features.all_features(question.question, ranked_sentences, candidate) for candidate in candidates])
+    candidates = [candidate[C.ENTITY] for candidate in candidates]
+    return X.tolist(), candidates
 
 def main():
     file_name = 'input/BioASQ-trainingDataset6b.json'
-    save_model_file_name = 'weights'
+    save_model_file_name = 'weights_2'
     ranker = SVMRank(save_model_file_name)
     data = DataLoader(file_name)
     data.load_ner_entities()
@@ -61,14 +67,10 @@ def main():
 
     for i, question in enumerate(questions):
         ranked_sentences = question.ranked_sentences()
-        X, y = get_features(question, ranked_sentences)
-        ranker.feed(X, y, i)
-
-    results = ranker.evaluate_from_feed()
-
-    for key in results:
-        print get_scores(results[key])
-        print len(results[key])
+        X, candidates = get_only_features(question, ranked_sentences)
+        top5 = ranker.classify_from_feed(X, candidates, i)
+        print question.exact_answer_ref
+        print top5
         
 
 
