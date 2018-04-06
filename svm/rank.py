@@ -1,5 +1,6 @@
 import svmlight
 import operator
+from collections import defaultdict as dd
 
 def save_object(filename, obj):
     with open(filename, 'wb') as output:
@@ -33,9 +34,11 @@ class SVMRank():
 		self.feed_X = []
 		self.feed_y = []
 		self.feed_ids = []
+		self.model = svmlight
 
-		if not self.weights:
-			self.model = svmlight
+		if self.weights:
+			self.current = self.model.read_model(self.weights)
+
 
 	def feed(self, X, y, i):
 		self.feed_X += X
@@ -63,6 +66,16 @@ class SVMRank():
 			formatted_X.append(light_format)
 
 		self._train(formatted_X)
+
+	def evaluate_from_feed(self):
+		formatted_X = []
+		X, y, ids = self.feed_X, self.feed_y, self.feed_ids
+
+		for _X, _y, _id in zip(X, y, ids):
+			light_format = SVMLightFormat(_y, _id, _X).get()
+			formatted_X.append(light_format)
+
+		return self._evaluate(formatted_X)
 
 	def evaluate(self, X, y, ids):
 
@@ -92,7 +105,13 @@ class SVMRank():
 			}
 			ranked_result.append(rank_obj)
 
-		return ranked_result
+		ranked_dict = dd(list)
+
+		for k in range(len(ranked_result)):
+			doc_id = ranked_result[k]['id']
+			ranked_dict[doc_id].append((ranked_result[k]['ranking'], ranked_result[k]['ground_truth']))
+
+		return ranked_dict
 
 	def save(self, name):
 		self.model.write_model(self.current, name)
@@ -111,7 +130,9 @@ def main():
 	ranker = SVMRank()
 	ranker.train(train_X, train_y, train_ids)
 	results = ranker.evaluate(test_X, test_y, test_ids)
-	print results
+	
+	for result in results:
+		print len(result)
 
 if __name__ == "__main__":
 	main()

@@ -4,6 +4,7 @@ import constants as C
 import factoid_letor_features
 import numpy as np
 import json
+from sklearn.metrics import classification_report
 
 def overlap_score(entity1, entity2):
     if entity1 == '':
@@ -19,6 +20,18 @@ def overlap_score(entity1, entity2):
 
     overlap = float(len(set(words1).intersection(set(words2))))
     return (overlap * overlap) / (size1 * size2)
+
+def get_scores(res):
+
+    prediction = []
+    ground_truth = []
+    for r in res:
+        pred, ground = r
+        prediction.append(pred)
+        ground_truth.append(ground)
+
+    return classification_report(prediction, prediction)
+
 
 def gold_candidate_rank(candidates, gold_answers):
     scores = []
@@ -39,11 +52,28 @@ def get_features(question, ranked_sentences):
     return X.tolist(), y
 
 def main():
-    ranker = SVMRank()
     file_name = 'input/BioASQ-trainingDataset6b.json'
+    save_model_file_name = 'weights'
+    ranker = SVMRank(save_model_file_name)
     data = DataLoader(file_name)
     data.load_ner_entities()
-    questions = data.get_questions_of_type(C.FACTOID_TYPE)[:419]
+    questions = data.get_questions_of_type(C.FACTOID_TYPE)[:2]
+
+    for i, question in enumerate(questions):
+        ranked_sentences = question.ranked_sentences()
+        X, y = get_features(question, ranked_sentences)
+        ranker.feed(X, y, i)
+
+    results = ranker.evaluate_from_feed()
+
+    for key in results:
+        print get_scores(results[key])
+        print len(results[key])
+        
+
+
+
+    """
 
     for i, question in enumerate(questions):
         ranked_sentences = question.ranked_sentences()
@@ -52,6 +82,7 @@ def main():
 
     ranker.train_from_feed()
     ranker.save('weights')
+    """
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
