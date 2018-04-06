@@ -63,18 +63,20 @@ def main():
     ranker = SVMRank(save_model_file_name)
     data = DataLoader(file_name)
     data.load_ner_entities()
-    questions = data.get_questions_of_type(C.FACTOID_TYPE)[:10]
+    questions = data.get_questions_of_type(C.FACTOID_TYPE)
 
     for i, question in enumerate(questions):
         ranked_sentences = question.ranked_sentences()
         X, candidates = get_only_features(question, ranked_sentences)
         top5 = ranker.classify_from_feed(X, candidates, i)
-        print question.exact_answer_ref
-        print '\n'
-        print top5
-        print '\n'
-        print '\n\n\n'
-        
+        question.exact_answer = top5
+        # print question.exact_answer_ref
+        # print '\n'
+        # print top5
+        # print '\n'
+        # print '\n\n\n'
+
+    data.eval_factoid()        
 
 if __name__ == '__main__':
     main()

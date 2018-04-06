@@ -134,6 +134,36 @@ class DataLoader():
         for q in questions:
             q.snippet_ner_entities = q._snippet_ner_entities()
 
+    def eval_factoid(self):
+        factoids = self.get_questions_of_type(FACTOID_TYPE)
+        mrrs = []
+        precisions = []
+        soft_precisions = []
+        missing = 0
+        for q in factoids:
+            rank = 1
+            mrr = 0
+            precision = 0
+            soft_precision = 0
+            if not q.exact_answer:
+                missing += 1
+                continue
+            for answer in q.exact_answer:
+                if answer in q.exact_answer_ref:
+                    mrr = 1.0 / rank
+                    if rank == 1:
+                        precision = 1.0
+                    soft_precision = 1.0
+                    break
+                rank += 1
+            mrrs.append(mrr)
+            precisions.append(precision)
+            soft_precisions.append(soft_precision)
+        print('Missing answers for %d questions' % missing)
+        print('Precision: %.2f' % np.mean(precisions))
+        print('Soft Precision: %.2f' % np.mean(soft_precisions))
+        print('MRR: %.2f' % np.mean(mrrs))
+
     def save_ners(self, output_file):
         data = {}
         questions = []
