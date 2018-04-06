@@ -18,12 +18,13 @@ class Question():
 
     def __init__(self,
         qid, q_type, question,
-        documents, snippets,
+        documents, snippets, bioasq_id,
         ideal_answer_ref=None,
         exact_answer_ref=None
     ):
 
         self.qid = qid
+        self.bioasq_id = bioasq_id
         self.type = q_type
         self.question = question
         self.documents = documents
@@ -164,6 +165,55 @@ class DataLoader():
         print('Soft Precision: %.2f' % np.mean(soft_precisions))
         print('MRR: %.2f' % np.mean(mrrs))
 
+    def load_answers_from_file(self, filename, exact):
+        with open(filename, 'r') as fp:
+            filedata = json.load(fp)
+        
+        for qid, value in filedata.items():
+            if value is not None:
+                q = self.questions[int(qid)]
+                if exact:
+                    q.exact_answer = value
+                else:
+                    q.ideal_answer = value
+
+    def save_submission(self, input_file, output_file):
+        with open(input_file, 'r') as fp:
+            data = json.load(fp)
+        for q in self.questions:
+            assert q.type == data[QUESTIONS][q.qid][TYPE]
+            assert q.bioasq_id == data[QUESTIONS][q.qid][ID]
+            if q.exact_answer:
+                data[QUESTIONS][q.qid][EXACT_ANSWER] = q.exact_answer
+            if q.ideal_answer:
+                data[QUESTIONS][q.qid][IDEAL_ANSWER] = q.ideal_answer
+        with open(output_file, 'w') as fp:
+            json.dump(data, fp, indent=4, sort_keys=True)
+
+    def save_yesno_answers(self, filename):
+        answers = {}
+        yesno = self.get_questions_of_type(YESNO_TYPE)
+        for q in yesno:
+            answers[q.qid] = q.exact_answer
+        with open(filename, 'w') as fp:
+            json.dump(answers, fp, indent=4, sort_keys=True)
+
+    def save_factoid_list_answers(self, filename):
+        answers = {}
+        factoids = self.get_questions_of_type(FACTOID_TYPE)
+        listtype = self.get_questions_of_type(LIST_TYPE)
+        for q in factoids + listtype:
+            answers[q.qid] = q.exact_answer
+        with open(filename, 'w') as fp:
+            json.dump(answers, fp, indent=4, sort_keys=True)
+
+    def save_ideal_answers(self, filename):
+        answers = {}
+        for q in self.questions:
+            answers[q.qid] = q.ideal_answer
+        with open(filename, 'w') as fp:
+            json.dump(answers, fp, indent=4, sort_keys=True)
+
     def save_ners(self, output_file):
         data = {}
         questions = []
@@ -193,6 +243,7 @@ class DataLoader():
                     question[BODY],
                     documents,
                     snippets,
+                    question[ID],
                     ideal_answer_ref=question.get(IDEAL_ANSWER, None),
                     exact_answer_ref=question.get(EXACT_ANSWER, None)
                 )

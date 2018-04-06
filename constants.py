@@ -8,6 +8,7 @@ IDEAL_ANSWER = 'ideal_answer'
 EXACT_ANSWER = 'exact_answer'
 BODY = 'body'
 TYPE = 'type'
+ID = 'id'
 
 ENTITY = 'entity'
 SOURCE = 'source'

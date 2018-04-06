@@ -3,6 +3,7 @@
 
 from bllipparser import RerankingParser
 from nltk.tree import Tree
+from tqdm import tqdm
 
 def pos_tags(q, rrp):
     s = rrp.simple_parse(q.encode("ascii", 'ignore'))
@@ -37,6 +38,5 @@ def q2s(q, rrp):
 def set_assertions_for_yesno_questions(data):
     rrp = RerankingParser.fetch_and_load('GENIA+PubMed', verbose=True)
     yesno = data.get_questions_of_type('yesno')
-    for q in yesno:
+    for q in tqdm(yesno):
         q.assertion_pos = q2s(q.question, rrp)
-        q.assertion_neg = q2s(q.question, rrp)
