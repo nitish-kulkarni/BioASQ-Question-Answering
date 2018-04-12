@@ -135,6 +135,32 @@ class DataLoader():
         for q in questions:
             q.snippet_ner_entities = q._snippet_ner_entities()
 
+    def eval_yesno(self):
+        yesno = self.get_questions_of_type(YESNO_TYPE)
+        yes_correct = 0.0
+        no_correct = 0.0
+        total_yes = 0.0
+        total_no = 0.0
+
+        for q in yesno:
+            if not q.exact_answer_ref or not q.exact_answer:
+                continue
+            if q.exact_answer_ref == 'yes':
+                total_yes += 1
+                yes_correct += (q.exact_answer_ref == q.exact_answer)
+            if q.exact_answer_ref == 'no':
+                total_no += 1
+                no_correct += (q.exact_answer_ref == q.exact_answer)
+
+        total_correct = yes_correct + no_correct
+        total_q = total_yes + total_no
+        total_acc = total_correct / total_q
+        yes_acc = yes_correct / total_yes
+        no_acc = no_correct / total_no
+        print('Total Accuracy = %2f (%d / %d)' % (total_acc, total_correct, total_q))
+        print('YES Accuracy = %2f (%d / %d)' % (yes_acc, yes_correct, total_yes))
+        print('No Accuracy = %2f (%d / %d)' % (no_acc, no_correct, total_no))
+
     def eval_factoid(self):
         factoids = self.get_questions_of_type(FACTOID_TYPE)
         mrrs = []
@@ -161,9 +187,9 @@ class DataLoader():
             precisions.append(precision)
             soft_precisions.append(soft_precision)
         print('Missing answers for %d questions' % missing)
-        print('Precision: %.2f' % np.mean(precisions))
-        print('Soft Precision: %.2f' % np.mean(soft_precisions))
-        print('MRR: %.2f' % np.mean(mrrs))
+        print('Precision: %.2f ' % (np.mean(precisions) * 100) )
+        print('Soft Precision: %.2f ' % (np.mean(soft_precisions) * 100) )
+        print('MRR: %.2f ' % (np.mean(mrrs) * 100) )
 
     def load_answers_from_file(self, filename, exact):
         with open(filename, 'r') as fp:

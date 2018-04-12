@@ -61,6 +61,7 @@ def get_only_features(question, ranked_sentences):
 
 def main():
     file_name = 'input/BioASQ-task6bPhaseB-testset3.json'
+    file_name = 'input/BioASQ-trainingDataset6b.json'
     save_model_file_name = 'weights_2'
     ranker = SVMRank(save_model_file_name)
     data = DataLoader(file_name)
@@ -72,21 +73,22 @@ def main():
         ranked_sentences = question.ranked_sentences()
         X, candidates = get_only_features(question, ranked_sentences)
         top_answers = ranker.classify_from_feed(X, candidates, i)
-        question.exact_answer = [[answer] for answer in top_answers[:5]]
+        # question.exact_answer = [[answer] for answer in top_answers[:5]]
+        question.exact_answer = [answer for answer in top_answers[:5]]
         # print question.exact_answer_ref
         # print '\n'
         # print top5
         # print '\n'
         # print '\n\n\n'
-    questions = data.get_questions_of_type(C.LIST_TYPE)
-    for i, question in enumerate(tqdm(questions)):
-        ranked_sentences = question.ranked_sentences()
-        X, candidates = get_only_features(question, ranked_sentences)
-        top_answers = ranker.classify_from_feed(X, candidates, i)
-        question.exact_answer = [[answer] for answer in top_answers[:10]]
+    # questions = data.get_questions_of_type(C.LIST_TYPE)
+    # for i, question in enumerate(tqdm(questions)):
+    #     ranked_sentences = question.ranked_sentences()
+    #     X, candidates = get_only_features(question, ranked_sentences)
+    #     top_answers = ranker.classify_from_feed(X, candidates, i)
+    #     question.exact_answer = [[answer] for answer in top_answers[:10]]
 
-    data.save_factoid_list_answers(ans_file)
-    # data.eval_factoid()        
+    # data.save_factoid_list_answers(ans_file)
+    data.eval_factoid()        
 
 if __name__ == '__main__':
     main()
