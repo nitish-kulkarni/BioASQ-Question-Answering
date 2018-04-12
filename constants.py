@@ -24,6 +24,7 @@ SUMMARY_TYPE = 'summary'
 
 PUBTATOR = 'PubTator'
 LINGPIPE = 'Lingpipe'
+CNN_GRAM = 'CNN_GRAM'
 PUBTATOR_TYPES = ['gene', 'disease', 'species', 'chemical', 'bioconcept', 'mutation']
 LINGPIPE_TYPES = []
 

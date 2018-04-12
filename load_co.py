@@ -62,6 +62,7 @@ def get_only_features(question, ranked_sentences):
 def main():
     file_name = 'input/BioASQ-task6bPhaseB-testset3.json'
     file_name = 'input/BioASQ-trainingDataset6b.json'
+    file_name = 'input/BioASQ-trainingDataset5b.json'
     save_model_file_name = 'weights_2'
     ranker = SVMRank(save_model_file_name)
     data = DataLoader(file_name)
@@ -88,7 +89,7 @@ def main():
     #     question.exact_answer = [[answer] for answer in top_answers[:10]]
 
     # data.save_factoid_list_answers(ans_file)
-    data.eval_factoid()        
+    data.eval_factoid()
 
 if __name__ == '__main__':
     main()
