@@ -5,8 +5,12 @@ import factoid_letor_features
 import numpy as np
 import json
 from sklearn.metrics import classification_report
-
 from tqdm import tqdm
+
+from nltk.tokenize import RegexpTokenizer
+
+from nltk.corpus import stopwords
+stop_words = set(stopwords.words('english'))
 
 def overlap_score(entity1, entity2):
     if entity1 == '':
@@ -53,11 +57,33 @@ def get_features(question, ranked_sentences):
     y = gold_candidate_rank(candidates, question.exact_answer_ref)
     return X.tolist(), candidates
 
-def get_only_features(question, ranked_sentences):
-    candidates = question.snippet_ner_entities
+def get_only_features(question, ranked_sentences, candidates):
+    # candidates = question.snippet_ner_entities
+    candidates = [{
+        C.ENTITY: candidate,
+        C.TYPE: '',
+        C.SOURCE: '',
+    } for candidate in candidates]
     X = np.array([factoid_letor_features.all_features(question.question, ranked_sentences, candidate) for candidate in candidates])
     candidates = [candidate[C.ENTITY] for candidate in candidates]
     return X.tolist(), candidates
+
+def finder_n(words, w_dict):
+    words = [a for a in words if a not in stop_words]
+    size = len(words)
+    for k in range(1, 5):
+        for i in range(size):
+            w_dict[' '.join(words[i:i+k])] += 1
+    return []
+
+def get_top_entities(sentences):
+    w_dict = dd(int)
+    tokenizer = RegexpTokenizer(r'\w+')
+    for sentence in sentences:
+        finder_n(tokenizer.tokenize(sentence.lower()), w_dict)
+    n_relevant = [(k,v) for k,v in dict(w_dict).iteritems()]
+    n_relevant.sort(key=lambda x: x[1], reverse=True)
+    return n_relevant
 
 def main():
     file_name = 'input/BioASQ-task6bPhaseB-testset3.json'

@@ -66,7 +66,11 @@ def all_features(question, sentences, entity):
          indri_score: indri_val
         }
     ]
-    entity = 'Homo erectus'
+    entity = {
+        'entity': 'Homo erectus',
+        'type': 'Species',
+        'source': 'PubTator'
+    }
     """
     entity_text = entity[C.ENTITY]
     entity_type = entity[C.TYPE]
@@ -75,14 +79,13 @@ def all_features(question, sentences, entity):
         _BM25_score(sentences, entity_text),
         _indri_score(sentences, entity_text),
         _num_sentences(sentences, entity_text),
-        _is_pubtator_type(question, entity_type),
+        # _is_pubtator_type(question, entity_type),
         #_is_lingpipe_type(question, entity_type),
         _tf_idf(sentences, entity_text),
-        _is_pubtator_entity(entity),
-        _is_lingpipe_entity(entity),
+        # _is_pubtator_entity(entity),
+        # _is_lingpipe_entity(entity),
     ]
     return features
-
 
 
 def main():
@@ -114,8 +117,6 @@ def main():
     ]
 
     print  _tf_idf(sentences, entity['text'])
-
-
 
 
 if __name__ == '__main__':
