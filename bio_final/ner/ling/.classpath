@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="demos/generic/src"/>
+	<classpathentry kind="src" path="demos/tutorial/chineseTokens/src"/>
+	<classpathentry kind="src" path="demos/tutorial/classify/src"/>
+	<classpathentry kind="src" path="demos/tutorial/cluster/src"/>
+	<classpathentry kind="src" path="demos/tutorial/crf/src"/>
+	<classpathentry kind="src" path="demos/tutorial/db/src"/>
+	<classpathentry kind="src" path="demos/tutorial/em/src"/>
+	<classpathentry kind="src" path="demos/tutorial/hyphenation/src"/>
+	<classpathentry kind="src" path="demos/tutorial/interestingPhrases/src"/>
+	<classpathentry kind="src" path="demos/tutorial/langid/src"/>
+	<classpathentry kind="src" path="demos/tutorial/lm/src"/>
+	<classpathentry kind="src" path="demos/tutorial/logistic-regression/src"/>
+	<classpathentry kind="src" path="demos/tutorial/ne/src"/>
+	<classpathentry kind="src" path="demos/tutorial/posTags/src"/>
+	<classpathentry kind="src" path="demos/tutorial/querySpellChecker/src"/>
+	<classpathentry kind="src" path="demos/tutorial/sentences/src"/>
+	<classpathentry kind="src" path="demos/tutorial/sentiment/src"/>
+	<classpathentry kind="src" path="demos/tutorial/stringCompare/src"/>
+	<classpathentry kind="src" path="demos/tutorial/svd/src"/>
+	<classpathentry kind="src" path="demos/tutorial/wordSense/src"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="demos/lib/commons-fileupload-1.2.1.jar"/>
+	<classpathentry kind="lib" path="demos/lib/commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="demos/lib/lingmed-1.3.jar"/>
+	<classpathentry kind="lib" path="demos/lib/lucene-core-3.0.1.jar"/>
+	<classpathentry kind="lib" path="demos/lib/luke-0.9.9.jar"/>
+	<classpathentry kind="lib" path="demos/lib/nekohtml-1.9.14.jar"/>
+	<classpathentry kind="lib" path="demos/lib/servlet-api-6.0.26.jar"/>
+	<classpathentry kind="lib" path="demos/lib/xercesImpl-2.9.1.jar"/>
+	<classpathentry kind="lib" path="demos/lib/xml-apis-2.9.1.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.8.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
