@@ -2,6 +2,7 @@ import cPickle as pickle
 import numpy as np
 from sklearn import svm
 import os.path
+from modules.dataLoader import DataLoader
 
 def save_object(filename, obj):
     with open(filename, 'wb') as output:
@@ -18,7 +19,7 @@ def filter_for_space(questions):
         answers = question['answers']
         candidates = [a['candidate'] for a in question['candidates']]
         is_present = False
-        
+
         for candidate in candidates:
             for answer in answers:
                 if answer.lower() == candidate.lower():
@@ -30,7 +31,7 @@ def filter_for_space(questions):
     return filtered_questions
 
 def get_soft_score(questions, max_perc_total):
-
+    print('soft_score, len questions', len(questions))
     percentual = []
     for i, question in enumerate(questions):
         answers = question['answers']
@@ -53,8 +54,14 @@ def get_soft_score(questions, max_perc_total):
 
 def normalize(a):
     col_min = np.amin(a,axis=0)
-    col_ptp = a.ptp(0)
-
+    # col_ptp = a.ptp(0)
+    # col_ptp = np.array(col_ptp.tolist())
+    # print type(col_ptp)
+    # print col_ptp
+    # for i in range(col_ptp.size):
+    #     if col_ptp[i] == 0:
+    #         col_ptp[i] = 1
+    col_ptp = 1
     return ((2*(a-col_min))/col_ptp) - 1
 
 def train(train_questions, test_questions):
@@ -102,7 +109,7 @@ def train(train_questions, test_questions):
             candidates_arr.append((score, candidate['candidate'], features))
 
         candidates_arr.sort(key=lambda x: x[0], reverse=True)
-        candidates_arr = candidates_arr[:5]
+        # candidates_arr = candidates_arr[:5]
         #print question['query']
         #print '\n'
         #print question['answers']
@@ -117,26 +124,40 @@ def train(train_questions, test_questions):
     return sorted_questions
 
 
-
-
-
-
 def main():
 
     initial_questions = load_object('pkl/questions.pkl')
-    questions = filter_for_space(initial_questions)
-    max_perc_total = (len(questions)/float(len(initial_questions)))*100
-    train_questions = questions[:174]
-    test_questions = questions[174:]
+    file_name = 'input/msmarco_factoid.json'
+    file_name = 'input/BioASQ-trainingDataset6b.json'
 
+    questions = filter_for_space(initial_questions)
+    questions = initial_questions
+    max_perc_total = (len(questions)/float(len(initial_questions)))*100
+    N = len(questions)
+    train_n = int(0.7 * N)
+    train_questions = questions[:train_n]
+    test_questions = questions[train_n:]
 
     print get_soft_score(test_questions, max_perc_total)
     sorted_test_questions = train(train_questions, test_questions)
     print get_soft_score(sorted_test_questions, max_perc_total)
 
+    data = DataLoader(file_name)
+    test_factoids = data.get_questions_of_type('factoid')[train_n:]
 
+    # print(len(test_questions))
+    # print(len(train_questions))
+    # print(len(sorted_test_questions))
+    # print(len(test_factoids))
+    # for i, q in enumerate(test_factoids):
+        # print q.exact_answer_ref
+        # print sorted_test_questions[i]['answers']
+        # exit()
+    #     candidates = [a['candidate'] for a in sorted_test_questions[i]['candidates']]
+    #     q.exact_answer = candidates[:5]
+    # data.eval_factoid(test_factoids)
 
-    #train_questions = questions[:388]
+    # train_questions = questions[:388]
 
     """
     for i, question in enumerate(questions):

@@ -18,7 +18,8 @@ class Question():
 
     def __init__(self,
         qid, q_type, question,
-        documents, snippets,
+        # documents, snippets,
+        snippets,
         ideal_answer_ref=None,
         exact_answer_ref=None
     ):
@@ -26,7 +27,7 @@ class Question():
         self.qid = qid
         self.type = q_type
         self.question = question
-        self.documents = documents
+        # self.documents = documents
         self.snippets = snippets
         self.snippet_sentences = _get_sentences([i.text for i in self.snippets])
         self.snippet_blob = '. '.join(self.snippet_sentences)
@@ -71,7 +72,7 @@ class Snippet():
     def __init__(self, text, document_uri):
 
         self.text = text
-        self.doc_id = _id_from_pubmed_uri(document_uri)
+        # self.doc_id = _id_from_pubmed_uri(document_uri)
 
 class Document():
 
@@ -105,6 +106,39 @@ class DataLoader():
 
     def get_questions_of_type(self, qtype):
         return [question for question in self.questions if question.type == qtype]
+
+    def eval_factoid(self, factoids):
+        # factoids = self.get_questions_of_type(FACTOID_TYPE)
+        mrrs = []
+        precisions = []
+        soft_precisions = []
+        missing = 0
+        for q in factoids:
+            rank = 1
+            mrr = 0
+            precision = 0
+            soft_precision = 0
+            if not q.exact_answer:
+                missing += 1
+                continue
+            # exact_answer_ref = [i for i in np.array(q.exact_answer_ref).flatten()]
+            exact_answer_ref = [i.lower() for i in np.array(q.exact_answer_ref).flatten()]
+            for answer in q.exact_answer:
+                if answer.lower() in exact_answer_ref:
+                # if answer in exact_answer_ref:
+                    mrr = 1.0 / rank
+                    if rank == 1:
+                        precision = 1.0
+                    soft_precision = 1.0
+                    break
+                rank += 1
+            mrrs.append(mrr)
+            precisions.append(precision)
+            soft_precisions.append(soft_precision)
+        print('Missing answers for %d questions' % missing)
+        print('Precision: %.2f ' % (np.mean(precisions) * 100) )
+        print('Soft Precision: %.2f ' % (np.mean(soft_precisions) * 100) )
+        print('MRR: %.2f ' % (np.mean(mrrs) * 100) )
 
     def load_ner_entities(self):
 
@@ -154,14 +188,14 @@ class DataLoader():
         questions = []
         for qid, question in enumerate(self.data):
             snippets = [Snippet(s['text'], s['document']) for s in question.get('snippets', [])]
-            documents = [Document(doc_uri) for doc_uri in question.get('documents', [])]
+            # documents = [Document(doc_uri) for doc_uri in question.get('documents', [])]
 
             questions.append(
                 Question(
                     qid,
                     question[TYPE],
                     question[BODY],
-                    documents,
+                    # documents,
                     snippets,
                     ideal_answer_ref=question.get(IDEAL_ANSWER, None),
                     exact_answer_ref=question.get(EXACT_ANSWER, None)

@@ -6,12 +6,12 @@ import nltk
 from nltk import word_tokenize, RegexpTokenizer
 from collections import defaultdict as dd
 from collections import OrderedDict as od
-from textblob import TextBlob
 import cPickle as pickle
 from nltk.corpus import stopwords
 import itertools as it
-import wikiwords
 import modules.retrieval_model as RM
+from get_features import _basic_features
+from modules.dataLoader import DataLoader
 
 stop_words = set(stopwords.words('english'))
 
@@ -50,12 +50,12 @@ def gold_candidate_rank(candidates, gold_answers):
         ranks[candidate] = rank + 1
     return [ranks[candidate] for candidate in candidates]
 
-def get_features(question, ranked_sentences):
-    sentences = [a['text'].lower() for a in ranked_sentences]
-    candidates = get_top_entities(sentences)
-    X = np.array([factoid_letor_features.all_features(question.question, ranked_sentences, candidate) for candidate in candidates])
-    y = gold_candidate_rank(candidates, question.exact_answer_ref)
-    return X.tolist(), y
+# def get_features(question, ranked_sentences):
+#     sentences = [a['text'].lower() for a in ranked_sentences]
+#     candidates = get_top_entities(sentences)
+#     X = np.array([factoid_letor_features.all_features(question.question, ranked_sentences, candidate) for candidate in candidates])
+#     y = gold_candidate_rank(candidates, question.exact_answer_ref)
+#     return X.tolist(), y
 
 def finder_n(words, w_dict):
 
@@ -80,7 +80,7 @@ def get_top_entities(sentences):
 
     return n_relevant
 
-def get_features(query, sentences, candidates, gold_answers):
+def get_features(query, sentences, candidates, gold_answers, ner_entities):
 
     candidates_obj = []
 
@@ -104,14 +104,14 @@ def get_features(query, sentences, candidates, gold_answers):
         #features += _indri_score(sentences, candidate)
         #features += _tf_idf(sentences, candidate)
         #features += _num_sentences(sentences, candidate)
-        features += _basic_features(sentences, candidate, w_dict, total_count, candidates, query)
+        features += _basic_features(sentences, candidate, w_dict, total_count, candidates, query, ner_entities)
         candidate_obj['features'] = features
         candidate_obj['score'] = np.array([overlap_score(candidate.lower().strip(), answer.lower().strip()) for answer in gold_answers]).max()
         candidates_obj.append(candidate_obj)
 
     return candidates_obj
 
-def get_plain_features(query, sentences, candidates):
+def get_plain_features(query, sentences, candidates, ner_entities):
 
     candidates_obj = []
     #prepare
@@ -130,7 +130,7 @@ def get_plain_features(query, sentences, candidates):
         candidate_obj = {}
         candidate_obj['candidate'] = candidate
         features = []
-        features += _basic_features(sentences, candidate, w_dict, total_count, candidates, query)
+        features += _basic_features(sentences, candidate, w_dict, total_count, candidates, query, ner_entities)
         candidate_obj['features'] = features
         candidates_obj.append(candidate_obj)
 
@@ -171,32 +171,37 @@ def get_answer_arr(answers_exact):
 
     return [ans.lower() for ans in answers]
 
-def _basic_features(sentences, entity, w_dict, total_count, candidates, query):
+# def _basic_features(sentences, entity, w_dict, total_count, candidates, query):
+#     return 
+#     position = w_dict[entity]/float(total_count)
+#     ov = 0.0
 
-    position = w_dict[entity]/float(total_count)
-    ov = 0.0
+#     for other_candidate in candidates:
+#         if entity in other_candidate:
+#             ov += 1.0
+#     ov = ov/float(len(candidates))
 
-    for other_candidate in candidates:
-        if entity in other_candidate:
-            ov += 1.0
-    ov = ov/float(len(candidates))
+#     is_in_query = 0.0
 
-    is_in_query = 0.0
-
-    if entity in query:
-        is_in_query = 1.0
+#     if entity in query:
+#         is_in_query = 1.0
 
 
 
-    return [position, is_in_query]
+#     return [position, is_in_query]
 
 
 def main():
 
     #file_name = 'input/BioASQ-trainingDataset5b.json'
     file_name = 'input/phaseB_5b_05.json'
+    file_name = 'input/BioASQ-task6bPhaseB-testset5.json'
     questions = json.load(open(file_name))['questions']
     get_perc = []
+
+    data = DataLoader(file_name)
+    # data.load_ner_entities()
+    qs = data.questions
 
     for i, question in enumerate(questions):
 
@@ -214,9 +219,9 @@ def main():
             sentences = RM.preprocess_sentences(sentences)
             sentences_obj = [{'text': s} for s in sentences]
             candidates = get_candidates(sentences_obj)
-            candidates_obj = get_plain_features(query, sentences_obj, candidates)
+            candidates_obj = get_plain_features(query, sentences_obj, candidates, qs[i].snippet_ner_entities)
 
-            clf = load_object('pkl/clf_svr_norm_all_clean_100')
+            clf = load_object('pkl/new_clf')
             candidates_arr = []
             for candidate in candidates_obj:
                 features = np.array([np.array(candidate['features'])])
@@ -238,9 +243,9 @@ def main():
             sentences = RM.preprocess_sentences(sentences)
             sentences_obj = [{'text': s} for s in sentences]
             candidates = get_candidates(sentences_obj)
-            candidates_obj = get_plain_features(query, sentences_obj, candidates)
+            candidates_obj = get_plain_features(query, sentences_obj, candidates, qs[i].snippet_ner_entities)
 
-            clf = load_object('pkl/clf_svr_norm_all_clean_100')
+            clf = load_object('pkl/new_clf')
             candidates_arr = []
             for candidate in candidates_obj:
                 features = np.array([np.array(candidate['features'])])
@@ -258,8 +263,8 @@ def main():
 
 
     #print np.array(get_perc).mean()
-    with open('ans5b-full.json', 'w') as outfile:
-        json.dump({'questions': questions}, outfile)
+    with open('ans6b-full.json', 'w') as outfile:
+        json.dump({'questions': questions}, outfile, indent=4)
 
 
 

@@ -175,8 +175,11 @@ class DataLoader():
             if not q.exact_answer:
                 missing += 1
                 continue
+            exact_answer_ref = [i for i in np.array(q.exact_answer_ref).flatten()]
+            # exact_answer_ref = [i.lower() for i in np.array(q.exact_answer_ref).flatten()]
             for answer in q.exact_answer:
-                if answer in q.exact_answer_ref:
+                # if answer.lower() in exact_answer_ref:
+                if answer in exact_answer_ref:
                     mrr = 1.0 / rank
                     if rank == 1:
                         precision = 1.0
@@ -211,8 +214,12 @@ class DataLoader():
             assert q.bioasq_id == data[QUESTIONS][q.qid][ID]
             if q.exact_answer:
                 data[QUESTIONS][q.qid][EXACT_ANSWER] = q.exact_answer
-            if q.ideal_answer:
-                data[QUESTIONS][q.qid][IDEAL_ANSWER] = q.ideal_answer
+            else:
+                if q.type == YESNO_TYPE:
+                    data[QUESTIONS][q.qid][EXACT_ANSWER] = 'yes'
+                if q.type in [FACTOID_TYPE, LIST_TYPE]:
+                    data[QUESTIONS][q.qid][EXACT_ANSWER] = []
+            data[QUESTIONS][q.qid][IDEAL_ANSWER] = q.ideal_answer if q.ideal_answer else 'yes'
         with open(output_file, 'w') as fp:
             json.dump(data, fp, indent=4, sort_keys=True)
 

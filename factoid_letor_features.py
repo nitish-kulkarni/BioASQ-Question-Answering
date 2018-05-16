@@ -79,10 +79,10 @@ def all_features(question, sentences, entity):
         _BM25_score(sentences, entity_text),
         _indri_score(sentences, entity_text),
         _num_sentences(sentences, entity_text),
-        # _is_pubtator_type(question, entity_type),
-        #_is_lingpipe_type(question, entity_type),
+        _is_pubtator_type(question, entity_type),
+        _is_lingpipe_type(question, entity_type),
         _tf_idf(sentences, entity_text),
-        # _is_pubtator_entity(entity),
+        _is_pubtator_entity(entity),
         # _is_lingpipe_entity(entity),
     ]
     return features

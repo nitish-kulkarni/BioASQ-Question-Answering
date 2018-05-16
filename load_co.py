@@ -57,13 +57,13 @@ def get_features(question, ranked_sentences):
     y = gold_candidate_rank(candidates, question.exact_answer_ref)
     return X.tolist(), candidates
 
-def get_only_features(question, ranked_sentences, candidates):
-    # candidates = question.snippet_ner_entities
-    candidates = [{
-        C.ENTITY: candidate,
-        C.TYPE: '',
-        C.SOURCE: '',
-    } for candidate in candidates]
+def get_only_features(question, ranked_sentences):
+    candidates = question.snippet_ner_entities
+    # candidates = [{
+    #     C.ENTITY: candidate,
+    #     C.TYPE: '',
+    #     C.SOURCE: '',
+    # } for candidate in candidates]
     X = np.array([factoid_letor_features.all_features(question.question, ranked_sentences, candidate) for candidate in candidates])
     candidates = [candidate[C.ENTITY] for candidate in candidates]
     return X.tolist(), candidates
@@ -89,6 +89,7 @@ def main():
     file_name = 'input/BioASQ-task6bPhaseB-testset3.json'
     file_name = 'input/BioASQ-trainingDataset6b.json'
     file_name = 'input/BioASQ-trainingDataset5b.json'
+    file_name = 'input/phaseB_5b_05.json'
     save_model_file_name = 'weights_2'
     ranker = SVMRank(save_model_file_name)
     data = DataLoader(file_name)
@@ -100,22 +101,22 @@ def main():
         ranked_sentences = question.ranked_sentences()
         X, candidates = get_only_features(question, ranked_sentences)
         top_answers = ranker.classify_from_feed(X, candidates, i)
-        # question.exact_answer = [[answer] for answer in top_answers[:5]]
-        question.exact_answer = [answer for answer in top_answers[:5]]
+        question.exact_answer = [[answer] for answer in top_answers[:5]]
+        # question.exact_answer = [answer for answer in top_answers]
         # print question.exact_answer_ref
         # print '\n'
         # print top5
         # print '\n'
         # print '\n\n\n'
-    # questions = data.get_questions_of_type(C.LIST_TYPE)
-    # for i, question in enumerate(tqdm(questions)):
-    #     ranked_sentences = question.ranked_sentences()
-    #     X, candidates = get_only_features(question, ranked_sentences)
-    #     top_answers = ranker.classify_from_feed(X, candidates, i)
-    #     question.exact_answer = [[answer] for answer in top_answers[:10]]
+    questions = data.get_questions_of_type(C.LIST_TYPE)
+    for i, question in enumerate(tqdm(questions)):
+        ranked_sentences = question.ranked_sentences()
+        X, candidates = get_only_features(question, ranked_sentences)
+        top_answers = ranker.classify_from_feed(X, candidates, i)
+        question.exact_answer = [[answer] for answer in top_answers[:10]]
 
-    # data.save_factoid_list_answers(ans_file)
-    data.eval_factoid()
+    data.save_factoid_list_answers(ans_file)
+    # data.eval_factoid()
 
 if __name__ == '__main__':
     main()

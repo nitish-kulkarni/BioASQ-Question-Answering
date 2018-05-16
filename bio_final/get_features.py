@@ -14,7 +14,6 @@ from collections import defaultdict as dd
 from collections import OrderedDict as od
 from nltk.corpus import stopwords
 import cPickle as pickle
-import wikiwords
 stop_words = set(stopwords.words('english'))
 
 def save_object(filename, obj):
@@ -67,7 +66,7 @@ def get_features_old(question, ranked_sentences, candidates, candidate_extra_fea
     y = gold_candidate_rank(candidates, gold_answers)
     return X.tolist(), y
 
-def get_features(query, sentences, candidates, gold_answers):
+def get_features(query, sentences, candidates, gold_answers, ner_entities):
 
     candidates_obj = []
 
@@ -91,7 +90,7 @@ def get_features(query, sentences, candidates, gold_answers):
         #features += _indri_score(sentences, candidate)
         #features += _tf_idf(sentences, candidate)
         #features += _num_sentences(sentences, candidate)
-        features += _basic_features(sentences, candidate, w_dict, total_count, candidates, query)
+        features += _basic_features(sentences, candidate, w_dict, total_count, candidates, query, ner_entities)
         candidate_obj['features'] = features
         candidate_obj['score'] = np.array([overlap_score(candidate.lower().strip(), answer.lower().strip()) for answer in gold_answers]).max()
         candidates_obj.append(candidate_obj)
@@ -161,7 +160,7 @@ def _tf_idf(sentences, entity):
 
     return [ctf * idf]
 
-def _basic_features(sentences, entity, w_dict, total_count, candidates, query):
+def _basic_features(sentences, entity, w_dict, total_count, candidates, query, ner_entities):
 
     position = w_dict[entity]/float(total_count)
     ov = 0.0
@@ -176,16 +175,30 @@ def _basic_features(sentences, entity, w_dict, total_count, candidates, query):
     if entity in query:
         is_in_query = 1.0
 
+    # is_pubtator = 0.0
+    # is_lingpipe = 0.0
+    # type_in_question = 0.0
+    # for ner_entity in ner_entities:
+    #     if entity.lower() in ner_entity[C.ENTITY].lower() or ner_entity[C.ENTITY].lower() in entity.lower():
+    #     # if entity.lower() in ner_entity[C.ENTITY].lower():
+    #         if ner_entity[C.SOURCE] == C.PUBTATOR:
+    #             is_pubtator = 1.0
+    #         if ner_entity[C.SOURCE] == C.LINGPIPE:
+    #             is_lingpipe = 1.0
+    #         if ner_entity[C.TYPE].lower() in query.lower():
+    #             type_in_question = 1.0
 
-
+    # return [position, is_in_query, type_in_question]
     return [position, is_in_query]
+    # return [position, is_in_query, is_pubtator, is_lingpipe, type_in_question]
 
 def main():
 
     questions_obj = []
-    file_name = 'input/BioASQ-trainingDataset5b.json'
+    file_name = 'input/BioASQ-trainingDataset6b.json'
+    # file_name = 'input/msmarco_factoid.json'
     data = DataLoader(file_name)
-    data.load_ner_entities()
+    # data.load_ner_entities()
 
     questions = data.get_questions_of_type(C.FACTOID_TYPE)
     for i, question in enumerate(tqdm(questions)):
@@ -193,13 +206,16 @@ def main():
         answers_arr = get_answer_arr(question.exact_answer_ref)
         sentences_obj = question.ranked_sentences()
         candidates = get_candidates(sentences_obj)
-        candidates_obj = get_features(query, sentences_obj, candidates, answers_arr)
+        # for e in question.snippet_ner_entities:
+        #     if e[C.ENTITY] not in candidates:
+        #         candidates.append(e[C.ENTITY])
+        candidates_obj = get_features(query, sentences_obj, candidates, answers_arr, question.snippet_ner_entities)
 
         question_obj = {
-        'sentences': sentences_obj,
-        'candidates': candidates_obj,
-        'query': query,
-        'answers': answers_arr
+            'sentences': sentences_obj,
+            'candidates': candidates_obj,
+            'query': query,
+            'answers': answers_arr
         }
         questions_obj.append(question_obj)
 
