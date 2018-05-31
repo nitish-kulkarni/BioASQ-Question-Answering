@@ -26,8 +26,8 @@
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
 
-% \aclfinalcopy % Uncomment this line for the final submission
- \def\aclpaperid{13} %  Enter the acl Paper ID here
+\aclfinalcopy % Uncomment this line for the final submission
+\def\aclpaperid{13} %  Enter the acl Paper ID here
 
 %\setlength\titlebox{5cm}
 % You can expand the titlebox if you need extra space
@@ -46,30 +46,25 @@
   {\tt [vasus, nitishkk, spothara, gbk, ehn, teruko] @cs.cmu.edu}\\
   }
 
-
-    
 \date{}
 
 \begin{document}
 \maketitle
 \begin{abstract}
-In this paper, we present a novel Biomedical Question Answering system, \textit{BioAMA}: ``Biomedical Ask Me Anything" on task 5b of the annual BioASQ challenge \cite{bioasq}. In this work, we focus on a wide variety of question types including factoid, list based, summary and yes/no type questions that generate both exact and well-formed `ideal' answers. For summary-type questions, we combine effective IR-based techniques for retrieval and diversification of relevant snippets for a question to create an end-to-end system which achieves a ROUGE-2 score of 0.72 and a ROUGE-SU4 score of 0.71 on ideal answer questions (7\%  improvement over the previous best model). Additionally, we propose a novel NLI-based framework to answer the yes/no questions. To train the NLI model, we also devise a transfer-learning technique by cross-domain projection of word embeddings. Finally, we present a two-stage approach to address the factoid and list type questions by first generating a candidate set using NER taggers and ranking them using both supervised or unsupervised techniques.
+In this paper, we present a novel Biomedical Question Answering system, \textit{BioAMA}: ``Biomedical Ask Me Anything" on task 5b of the annual BioASQ challenge \cite{bioasq}. We focus on a wide variety of question types including factoid, list based, summary and yes/no type questions that generate both exact and well-formed `ideal' answers. For summary-type questions, we combine effective IR-based techniques for retrieval and diversification of relevant snippets for a question to create an end-to-end system which achieves a ROUGE-2 score of 0.72 and a ROUGE-SU4 score of 0.71 on ideal answer questions (7\%  improvement over the previous best model). Additionally, we propose a novel Natural Language Inference (NLI) based framework to answer the yes/no questions. To train the NLI model, we also devise a transfer-learning technique by cross-domain projection of word embeddings. Finally, we present a two-stage approach to address the factoid and list type questions by first generating a candidate set using NER taggers and ranking them using both supervised and unsupervised techniques.
 
 \end{abstract}
 
-
 \section{Introduction}
-In the era of ever advancing medical sciences and the age of the internet, a remarkable amount of medical literature is constantly being posted online. This has led to a need for an effective retrieval and indexing system which can allow us to extract meaningful information from these vast knowledge sources. One of the most effective and natural ways to leverage this huge amount of data in real life is to build a Question Answering system which will allow us to directly query this data and extract meaningful and structured information in a human readable form. 
+In the era of ever advancing medical sciences and the age of the internet, a remarkable amount of medical literature is constantly being posted online. This has led to a need for an effective retrieval and indexing system which can allow us to extract meaningful information from these vast knowledge sources. One of the most effective and natural ways to leverage this huge amount of data in real life is to build a Question Answering (QA) system which will allow us to directly query this data and extract meaningful and structured information in a human readable form. 
 
 % In this paper, we present  an end-to-end question answering system designed to handle the large variety of question types present in the BioASQ dataset which we call as ``\textit{BioAMA}: Biomedical Ask Me Anything".   \\
-Our key novel contributions in this paper are:
+Our key novel contributions are as follows:
 \begin{enumerate}
-    \item \textbf{State of the art result on ideal answer questions}: Our proposed \textit{BioAMA} system attains state of the art results in automatic evaluation measures for the ideal answer questions in Task 5b of the BioASQ dataset, yielding a 7\%  improvement over the previous state of the art system \cite{khyati-paper}.
-    \item \textbf{Novel framework for Yes/No type QA}: 
-    We introduce a novel NLI-based approach for answering the Yes/No style questions in the BioASQ dataset. We model these questions as a Textual Entailment (TE) problem and use Hierarchical Convolutional Neural Network based Infersent models \cite{Infersent} to answer this type of question. To address the challenge of inadequate training data, we also introduce a novel embedding projection technique which allows for effective transfer learning from models trained on larger datasets with a different vocabulary to work on the much smaller BioASQ dataset.
-    \item \textbf{A novel two-stage approach to answer Factoid and List type questions}: 
-    By using an ensemble of biomedical NER taggers to generate a candidate answer set, we devise unsupervised and supervised ranking algorithms to generate the final predictions.
-    \item \textbf{Improved Maximum Marginal Relevance (MMR) framework}: We improve upon the MMR framework for relevant sentence selection from the chosen snippets. The use of MMR for sentence selection was introduced in the work of Chandu et al. \shortcite{khyati-paper}. We improve upon this framework by experimenting with a number of more informative similarity metrics to replace and improve upon the baseline Jaccard similarity metric.
+    \item We achieve state of the art results in automatic evaluation measures for the ideal answer questions in Task 5b of the BioASQ dataset, yielding a 7\%  improvement over the previous state of the art system \cite{khyati-paper}.
+    \item We introduce a novel NLI-based approach for answering the yes/no style questions in the BioASQ dataset. We model this as a Textual Entailment (TE) problem and use Hierarchical Convolutional Neural Network based Infersent models \cite{Infersent} to answer the question. To address the challenge of inadequate training data, we also introduce a novel embedding projection technique which allows for effective transfer learning from models trained on larger datasets with a different vocabulary to work well on the much smaller BioASQ dataset.
+    \item We present two-stage approach to answer factoid and list type questions. By using an ensemble of biomedical NER taggers to generate a candidate answer set, we devise unsupervised and supervised ranking algorithms to generate the final predictions.
+    \item We improve upon the MMR framework for relevant sentence selection from the chosen snippets that was introduced in the work of Chandu et al. \shortcite{khyati-paper}. We experiment with a number of more informative similarity metrics to replace and improve upon the baseline Jaccard similarity metric.
 
 \end{enumerate}
     %\item \textbf{Incorporating Information retrieval in the Question Answering pipeline}:
@@ -105,11 +100,11 @@ This section describes our efforts to address the ideal answer category on BioAS
      \label{fig:ideal_answers_pipeline}
  \end{figure*}
 
-Our pipeline for ideal answers has three stages. The first stage involves pre-processing of answer snippets and ranking of answer sentences by various retrieval models described in the following sections. The retrieval model scores form the soft positional component introduced in the MMR algorithm. We perform sentence selection next, where we select the top 10 best sentences for generating an ideal answer. The third and final stage involves tiling together the selected sentences to generate a coherent, non redundant, ideal answer for the given question. 
+Our pipeline for ideal answers has three stages. The first stage involves pre-processing of answer snippets and ranking of answer sentences by various retrieval models described in the following sections. The retrieval model scores form the soft positional component introduced in the MMR algorithm. We perform sentence selection next, where we select the top 10 best sentences for generating an ideal answer. The third and final stage involves tiling together the selected sentences to generate a coherent, non redundant, ideal answer for the given question as mentioned in \cite{khyati-paper}. 
  %We describe our improvements to the pipeline that can be applied to all the above categories with primary focus being summary type questions as described in Section \ref{Dataset}.
-The subsequent subsections explain the full pipeline for ideal answer type questions in detail (see Figure \ref{fig:ideal_answers_pipeline}).
+The subsequent subsections explain the pipeline for ideal answer type questions in detail (see Figure \ref{fig:ideal_answers_pipeline}).
 \subsection{Question-Sentence Retrieval}
-In this section we describe various approaches which were adapted to improve the initial retrieval of candidate sentences. We used the standard BM25 algorithm with custom pre-processing to exclude medical entities from stop word removal.  
+In this section we describe various approaches which were adapted to improve the initial retrieval of candidate sentences. We used the standard BM25 algorithm with custom pre-processing of excluding medical entities from stop word removal.  
 
 % \subsubsection{BM25}
 % BM25 \cite{BM25} is a standard tf-idf based retrieval algorithm relying on bag of words approach for document retrieval. We considered every question to be independent and built an inverted index over the relevant snippets following the standard methods. Since the snippets are short paragraphs and the question is of moderate length, we tuned BM25 parameters accordingly. We customized the pre-processing by creating our own set of stop words that excluded certain bio-medical entities which might have been considered an English stop-word.
@@ -119,9 +114,9 @@ In this section we describe various approaches which were adapted to improve the
 
 \subsubsection{Indri}
 
-Indri \cite{Indri} is more modern retrieval model based on the use of statistical language models and query likelihood. 
+Indri \cite{Indri} is a retrieval model based on the use of statistical language models and query likelihood. 
 % We assumed a uniform prior over the sentences and ranked the candidate sentences based on the probability of the question given the sentence. 
-We employed a two-stage smoothing that considers characteristics of both the query (the question in this context) and answer sentences. 
+We employed a two-stage smoothing that considers characteristics of both the question and answer sentences. 
 
 The Indri score for a candidate sentence is estimated in a collection (C) of snippets as follows:
 \begin{align}
@@ -131,11 +126,12 @@ The Indri score for a candidate sentence is estimated in a collection (C) of sni
     & p_{mle}(q_i | C) = \frac{ctf}{length(C)}
 \end{align}
 
-where, $\lambda$ is the coefficient for linear interpolation based smoothing that accounts for question length smoothing. Since the questions are of moderate length, after tuning, the best value of $\lambda$ is attained at 0.75
+where, $\lambda$ is the coefficient for linear interpolation based smoothing that accounts for question length smoothing and also compensates for differences in the word importance (gives idf-effects). Since the questions are of moderate length, after tuning, the best value of $\lambda$ is attained at 0.75
 
-In equation \ref{eq2}, $\mu$ is parameter for Bayesian smoothing using Dirichlet priors used for sentence length normalization. Since sentences of snippets can be of varying lengths, after tuning, the best value of $\mu$ is attained at 5000.
+In equation \ref{eq2}, $\mu$ is parameter for Bayesian smoothing using Dirichlet priors used for sentence length normalization, improving the estimates of the sentence sample.Since sentences of snippets can be of varying lengths, after tuning, the best value of $\mu$ is attained at 5000.
 
-% Both of the above smoothing techniques do two different things, the mixture model (interpolation) compensates for differences in the word importance (gives idf-effects) and the Dirichlet prior improves the estimates of the sentence sample which supports our decision to use two stage smoothing. 
+% Both of the above smoothing techniques do two different things, the mixture model (interpolation) compensates for differences in the word importance (gives idf-effects) 
+% and the Dirichlet prior improves the estimates of the sentence sample which supports our decision to use two stage smoothing. 
 
 % \subsubsection{LeToR}
 
@@ -154,19 +150,18 @@ Once the top most relevant snippets have been chosen, we want to choose sentence
 
 \subsubsection{MMR}
 
-We use the Maximum Marginal Relevance (MMR) algorithm \cite{MMR} as the baseline for sentence selection. In contrast to the basic Jaccard similarity metric used in previous work \cite{khyati-paper}, we experimented with other similarity measures which consistently perform better than the Jaccard baseline. MMR ensures the selected set contains non-redundant yet complete information. The sentences are selected based on two aspects, the sentence's relevance to the question and how different it is to the already selected sentences. At each step we select a document to append to the ranking based on the equation below.
+We use the Maximum Marginal Relevance (MMR) algorithm \cite{MMR} as the baseline for sentence selection. In contrast to the basic Jaccard similarity metric used in previous work \cite{khyati-paper}, we experimented with other similarity measures which consistently perform better than the Jaccard baseline. MMR ensures the selected set contains non-redundant yet complete information. The sentences are selected based on two aspects, the sentence's relevance to the question and how different it is to the already selected sentences. At each step we select a sentence to append to the ranking based on the equation below.
 \vspace{-0.3cm}
 \begin{multline}
-     d_i = \argmax_{d_j\in R \setminus S} (\lambda \cdot sim(q, d_i)  \\  - (1 - \lambda) \cdot max\limits_{d \in \mathcal{S}}(sim_{sent}(d_i, d_j) ) ) \label{eq4}
+     s_i = \argmax_{s_j\in R \setminus S} (\lambda \cdot sim(q, s_i)  \\  - (1 - \lambda) \cdot max\limits_{s \in \mathcal{S}}(sim_{sent}(s_i, s_j) ) ) \label{eq4}
 \end{multline}
    
-
- We define a custom similarity metric between documents which uses positional values of sentences from the initial ranking as follows:
+ We define a custom similarity metric between sentences which uses positional values of sentences from the initial ranking as follows:
  \vspace{-0.3cm}
 \begin{multline}
-  sim_{sent}(di, dj) = ( 1 - \beta) \cdot (1 - \frac{rank(s_i)}{n}) \\+ \beta \cdot sim(d_i, d_j) 
+  sim_{sent}(s_i, s_j) = ( 1 - \beta) \cdot (1 - \frac{rank(d_i)}{n}) \\+ \beta \cdot sim(s_i, s_j) \label{eq5}
 \end{multline}
-Here, $sim_{sent}(di, dj)$ is the sentence to sentence similarity, $sim(q, di)$  is the question - sentence similarity, $rank(s_i)$ is the rank of the snippet which contains the sentence $d_i$, $S$ are Sentences already selected for summary i.e. which are ranked above this position. In the above equation, we tried various metrics to account for the sentence to sentence similarity. In cases where $\beta$ is non-zero, equation \ref{eq4} is identified as our SoftMMR which includes soft scoring based on sentence position.
+Here, $sim_{sent}(s_i, s_j)$ is the sentence to sentence similarity, $sim(q, s_i)$  is the question - sentence similarity, $rank(d_i)$ is the rank of the snippet $d_i$, which contains the sentence $s_i$, $S$ are Sentences already selected for summary i.e. which are ranked above this position. In the above equation, we tried various metrics to account for the sentence to sentence similarity. In cases where $\beta$ is non-zero, equation \ref{eq4} is identified as our SoftMMR which includes soft scoring based on sentence position.
 
 \subsubsection{Dice's similarity Coefficient (DSC)}
 
@@ -176,7 +171,7 @@ Dice's similarity Coefficient (DSC) \cite{dice} is a quotient of similarity betw
 \begin{equation*}
     dsc = (2 * n_t) / (n_x + n_y)
 \end{equation*}
-where $n_t$ is the number of character bigrams found in both strings, $n_x$ is number of bigrams in string $x$ and $n_y$ is the number of bigrams in string $y$.
+where $n_t$ is the number of character bigrams found in both strings, $n_x$ is number of bigrams in string $x$ and $n_y$ is the number of bigrams in string $y$. We used Dice coefficient as a similarity metric between two sentences in \ref{eq5}
 \subsection{\textbf{Evaluation}} The pipeline described above is primarily designed to improve the ROUGE evaluation metric \cite{Rougue}. Although a higher ROUGE score does not necessarily reflect improved human readability, MMR can improve readability by reducing redundancy in generated answers.
 Results for ideal answers for Task 5 phase b are shown in Table \ref{tab:rouge_extractive_summarization}. We also compare our results with other state of the art approaches in Table \ref{tab:comparison_results}.
 
@@ -208,7 +203,7 @@ Results for ideal answers for Task 5 phase b are shown in Table \ref{tab:rouge_e
 
 \section{Exact answers}
 \label{approach2}
-Exact answers represent the subset of the BioASQ task where the responses are not structured paragraphs, but instead either a single entity (\textit{yes/no} types) or a combination of named entities (\textit{factoid} or \textit{list} types) that compose the correct reply to the given query. The main idea refers to evaluating if a response is able to capture the most important components of an answer. For factoid or list types of questions, we must return a list of the most likely entities to compose the answer. The main difference between them is that ground truth for \textit{factoid} questions is composed of only one correct answer and the evaluation method is Mean Reciprocal Rank (MRR). However, the ground truth for \textit{list} is an actual list of correct answers with varying length, which uses F-measure as an evaluation metric. The BioASQ submission format allows everyone to submit 5 ranked answers for \textit{factoid} and 1 to 10 answers for \textit{list}. For \textit{yes/no} questions, the ground truth is simply the yes or no label, using maF-measure as an evaluation metric.
+Exact answers represent the subset of the BioASQ task where the responses are not structured paragraphs, but instead either a single entity (\textit{yes/no} types) or a combination of named entities (\textit{factoid} or \textit{list} types) that compose the correct reply to the given query. The main idea refers to evaluating if a response is able to capture the most important components of an answer. For factoid or list types of questions, we must return a list of the most likely entities to compose the answer. The main difference between them is that ground truth for \textit{factoid} questions is composed of only one correct answer and the evaluation method is Mean Reciprocal Rank (MRR). However, the ground truth for \textit{list} is an actual list of correct answers with varying length, which uses F-measure as an evaluation metric. The BioASQ submission format allows everyone to submit 5 ranked answers for \textit{factoid} and 1 to 10 answers for \textit{list}. For \textit{yes/no} questions, the ground truth is simply the yes or no label, using F-measure as an evaluation metric.
 
 
 \subsection{Yes/No type questions}
@@ -240,7 +235,7 @@ Upon parsing of this question, we have the phase constituents of the question. A
 
 \textit{The monoclonal antibody Trastuzumab (Herceptin) is of potential use in the treatment of prostate cancer.}
 
-In a similar manner, we then create positive assertions for all \textit{yes/no} questions as depicted in Figure . As a simple extension to this, we can also create negative assertions by using \textit{not} along with the auxiliary verbs.
+In a similar manner, we then create positive assertions for all \textit{yes/no} questions. As a simple extension to this, we can also create negative assertions by using \textit{not} along with the auxiliary verbs.
 
 %\begin{table*}[t!]
 %    \centering
@@ -317,11 +312,11 @@ However, we have pre-trained embeddings available that were trained on PubMed an
     \end{figure*}
 
     The end-to-end architecture of our system from the input questions and snippets to the answer is shown Figure \ref{fig:yesno_pipeline}.
-    
+
 \subsubsection{Experimental Details}
 
 For parsing the questions, we used BLLIP reranking parser \cite{charniak_new1} (Charniak-Johnson parser) %\cite{charniak_new1} 
-and used the model \texttt{GENIA+PubMed} for biomedical text. For training the textual entailment classifier using \textit{InferSent}'s sentence embeddings, we used Stanford's SNLI \& Multi-NLI dataset \cite{snli} to achieve a test-set accuracy of $84.7 \%$.
+and used the model \texttt{GENIA+PubMed} for biomedical text. For training the textual entailment classifier using \textit{InferSent}'s sentence embeddings, we used Stanford's SNLI dataset \cite{snli} to achieve a test-set accuracy of $84.7 \%$.
 %TODO: Specify details for non-linear embedding transformation
 
 \subsubsection{Results}
@@ -348,6 +343,33 @@ Most of the state-of-the-art models for this task involve training end-to-end de
 
 For devising the model and evaluation, we primarily focused on factoid type questions since the methodology for the list-type question would be largely similar and different only in the number of top entities returned. 
 
+\subsubsection{Candidate Selection}
+
+We found that the most critical step in the answer generation process is to identify the set of potential answer candidates that can be fed into a classifier or ranker to identify the best candidates. At first, in order to accomplish this, we used Named Entity Recognition (NER) taggers to form a set of candidate answers. The taggers that we used include Gram-CNN \cite{gram-cnn}, LingPipe\cite{lingpipe} and PubTator \cite{pubtator}. To analyze the effectiveness of these taggers, we performed an analysis on BioASQ training set 5b by evaluating the fraction of questions whose answers are included in the candidate entity set by the taggers.
+
+Table \ref{tab:NER_tagging_performances} shows the relative performances of the three taggers, their union as well as intersection on train dataset of BioASQ 5b factoid type questions. A question is exactly answered if a tagger tags an entity that matches an answer exactly, and it is partially answered if there is a non-zero overlap with an entity tagged and an answer for the question. We can notice that PubTator and LingPipe have a good recall with relatively low precision, while Gram CNN has high recall but low precision. However, the final results with the Named Entity Taggers were not aligned with our expectations. This is mostly because the answers for BioASQ are usually a combination of BioNERs and complementary words, making it hard to define a pruning method that is able to yield satisfactory results. Surprisingly, a group of candidates formed of the 100 most frequent \texti{n}-grams (\textit{n} from 1 to 4) from the snippets' sentences were a better candidate group than the NER approach for our supervised ranking method (with NER taggers used as features instead of candidate entities).
+
+\subsubsection{Classification Features}\label{sec:classification_features}
+
+Upon computing the set of candidate answers, we use the question $q$, set of relevant snippet sentences $\mathcal{S}$ and entity type $t_i$ to devise a feature vector for each individual entity $e_i$ that comprises the following features:
+
+\begin{itemize}[noitemsep]
+    \item BM25 Score: The BM25 scores for all the sentences are computed with the question as the query. Then, the scores of the sentence that contain the entity are aggregated to compute the BM25 score for the entity, i.e.
+    \begin{align*}
+    %     \text{BM25 }&\text{Score($e_i$)} \\
+    %   &= \sum_{s \in \mathcal{S}} \text{BM25 Score($e_i$)} \cdot \mathbbm{1}(s, e_i)
+        \text{Score}_{BM25}(e_i) &= \sum_{s \in \mathcal{S}} \text{Score}_{BM25}(e_i) \cdot \mathbbm{1}(s, e_i)
+    \end{align*}
+    where $\mathbbm{1}(s, e_i)$ is 1 iff sentence $s$ has entity $e_i$.
+    \item Indri Score: Computed in the same manner as BM25 score in (i)
+    \item Number of Sentences: Number of sentences $s \in \mathcal{S}$ that contain the entity $e_i$
+    \item NER Tagger: A multinomial feature that represents which tagger among PubTator, LingPipe and GramCNN the entity was extracted with. This feature is included to identify the relative strengths of the different taggers.
+    \item Tf Idf: The aggregate Tf-Idf scores of the entity with $\mathcal{S}$ as the set of documents
+    \item Entity Type: Is a boolean feature that is 1 if the type of the entity (for example, \textit{gene}) is present in the question, and 0 otherwise.
+    \item Relative Frequency: The amount of times the entity appears on the snippets' sentences divided by the total appearance of all of the relevant entities.
+    \item Query Presence: Is a boolean feature that is 1 if the query contains the entity completely and 0 otherwise.
+
+\end{itemize}
 \begin{table}[h]
     \centering
     \begin{tabular}{cccc} \hline
@@ -390,34 +412,6 @@ For devising the model and evaluation, we primarily focused on factoid type ques
     \label{tab:comparison_results}
 \end{table*}
 \vspace{-0.3cm}
-\subsubsection{Candidate Selection}
-
-We found that the most critical step in the answer generation process is to identify the set of potential answer candidates that can be fed into a classifier or ranker to identify the best candidates. At first, in order to accomplish this, we used Named Entity Recognition (NER) taggers to form a set of candidate answers. The taggers that we used include Gram-CNN \cite{gram-cnn}, LingPipe\cite{lingpipe} and PubTator \cite{pubtator}. To analyze the effectiveness of these taggers, we performed an analysis on BioASQ training set 5b by evaluating the fraction of questions whose answers are included in the candidate entity set by the taggers.
-
-Table \ref{tab:NER_tagging_performances} shows the relative performances of the three taggers, their union as well as intersection on train dataset of BioASQ 5b factoid type questions. A question is exactly answered if a tagger tags an entity that matches an answer exactly, and it is partially answered if there is a non-zero overlap with an entity tagged and an answer for the question. We can notice that PubTator and LingPipe have a good recall with relatively low precision, while Gram CNN has high recall but low precision. However, the final results with the Named Entity Taggers were not aligned with our expectations. This is mostly because the answers for BioASQ are usually a combination of BioNERs and complementary words, making it hard to define a pruning method that is able to yield satisfactory results. Surprisingly, a group of candidates formed of the 100 most frequent \texti{n}-grams (\textit{n} from 1 to 4) from the snippets' sentences were a better candidate group than the NER approach for our supervised ranking method and we decided to use the NER taggers as features instead of candidate groups.
-
-
-\subsubsection{Classification Features}\label{sec:classification_features}
-
-Upon computing the set of candidate answers, we use the question $q$, set of relevant snippet sentences $\mathcal{S}$ and entity type $t_i$ to devise a feature vector for each individual entity $e_i$ that comprises the following features:
-
-\begin{itemize}[noitemsep]
-    \item BM25 Score: The BM25 scores for all the sentences are computed with the question as the query. Then, the scores of the sentence that contain the entity are aggregated to compute the BM25 score for the entity, i.e.
-    \begin{align*}
-    %     \text{BM25 }&\text{Score($e_i$)} \\
-    %   &= \sum_{s \in \mathcal{S}} \text{BM25 Score($e_i$)} \cdot \mathbbm{1}(s, e_i)
-        \text{Score}_{BM25}(e_i) &= \sum_{s \in \mathcal{S}} \text{Score}_{BM25}(e_i) \cdot \mathbbm{1}(s, e_i)
-    \end{align*}
-    where $\mathbbm{1}(s, e_i)$ is 1 iff sentence $s$ has entity $e_i$.
-    \item Indri Score: Computed in the same manner as BM25 score in (i)
-    \item Number of Sentences: Number of sentences $s \in \mathcal{S}$ that contain the entity $e_i$
-    \item NER Tagger: A multinomial feature that represents which tagger among PubTator, LingPipe and GramCNN the entity was extracted with. This feature is included to identify the relative strengths of the different taggers.
-    \item Tf Idf: The aggregate Tf-Idf scores of the entity with $\mathcal{S}$ as the set of documents
-    \item Entity Type: Is a boolean feature that is 1 if the type of the entity (for example, \textit{gene}) is present in the question, and 0 otherwise.
-    \item Relative Frequency: The amount of times the entity appears on the snippets' sentences divided by the total appearance of all of the relevant entities.
-    \item Query Presence: Is a boolean feature that is 1 if the query contains the entity completely and 0 otherwise.
-
-\end{itemize}
 
 \subsubsection{Unsupervised Ranking}
 
