@@ -1,15 +1,21 @@
 # from flask import Flask, request, abort, render_template
 # from flask import jsonify, render_template
 
+import os
+java_path = "C:/../../jdk1.8.0_101/bin/java.exe"
+os.environ['JAVAHOME'] = java_path
+
 import sys
 import json
 import copy
+import nltk
+#nltk.download('punkt')
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 from Expander import Expander
 from NoExpander import NoExpander
-from SnomedctExpander import SnomedctExpander
-from UMLSExpander import UMLSExpander
+#from SnomedctExpander import SnomedctExpander
+#from UMLSExpander import UMLSExpander
 
 from BiRanker import BiRanker
 from coreMMR import CoreMMR
@@ -34,7 +40,7 @@ import pyrouge
 import logging
 from logging import config
 
-from pymetamap import MetaMap
+#from pymetamap import MetaMap
 # from singletonConceptId import *
 
 import question_classifier
@@ -226,7 +232,7 @@ class Pipeline(object):
 if __name__ == '__main__':
 
     # filePath = sys.argv[1]
-    filePath = "./input/phaseB_5b_05.json"
+    filePath = "./input/phaseB_4b_04.json"
     expanderInstance = NoExpander()
     biRankerInstance = CoreMMR()
     # biRankerInstance = BM25Ranker()

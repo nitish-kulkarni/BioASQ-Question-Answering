@@ -198,7 +198,8 @@ class Fusion(Tiler):
                             if bigram in bsentence]) >= concepts[i]
 
         # solve the problem
-        problem.solve(GLPK())
+        #problem.solve(GLPK())
+        problem.solve()
 
         summary = []
         # get the sentences back

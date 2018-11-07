@@ -1,4 +1,4 @@
-from pymetamap import MetaMap
+#from pymetamap import MetaMap
 import os
 import diskcache as dc
 
