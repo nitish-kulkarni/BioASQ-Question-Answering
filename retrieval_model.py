@@ -147,7 +147,7 @@ def get_ranked_snippets(snippets, question_text, algo='BM25'):
 
     score_list = dict()
     N = len(snippets)
-    avg_doc_length = float(total_token_count) / N
+    #avg_doc_length = float(total_token_count) / N
 
     for snippet in snippets:
         tokens = get_tokens(snippet['text'])
