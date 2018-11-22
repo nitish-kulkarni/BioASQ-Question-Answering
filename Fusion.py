@@ -9,8 +9,8 @@ from collections import Counter
 import takahe
 import multiprocessing
 import document
-from pulp import GLPK
 import pulp
+from pulp import GLPK
 import nltk
 import string
 import re
@@ -199,8 +199,8 @@ class Fusion(Tiler):
 
         # solve the problem
         #problem.solve(GLPK())
-        problem.solve()
-
+        #problem.solve()
+        problem.solve(GLPK(msg=False))
         summary = []
         # get the sentences back
         for j in range(numsentences):
