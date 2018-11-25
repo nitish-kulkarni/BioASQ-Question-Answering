@@ -36,7 +36,7 @@ class CoreMMR(BiRanker):
             best_sim = -99999999
             for sentence in sentences:
                 # similarityJaccard is an extension of Similarity Measure that takes 2 sentences ansd returns the float (similarity)
-                similarity_class = SimilarityAll
+                similarity_class = SimilarityRanker
 
                 similarityInstance = similarity_class(sentence, question['body'])
                 ques_sim = similarityInstance.calculateSimilarity()
