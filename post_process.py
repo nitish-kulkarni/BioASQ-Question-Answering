@@ -79,22 +79,21 @@ def compute_accuracy(input_json,output_json):
         
         output_list_type=get_val_key('type','list',output_answer_json['questions'])
         print(len(output_list_type))
-        #print(output_list_type[0])
-        #print(output_list_type)                
-        #input_question_list=[]
-        #for question in output_list_type:
-        #        print(question['id'])
-                #print(question['id'])
-                #print(get_val_key('id',question['id'],input_question_json['questions']))
-        #       print(question['body'])
-        #       input_question_list.append(get_val_key('id',question['id'],input_question_json['questions'])[0])
-        
         input_question_list=get_input_question_list(input_question_json,output_list_type)
-        pdb.set_trace()
         print(len(input_question_list))        
         soft_measure,hard_measure=compute_acc_type(input_question_list,output_list_type)      
-
-        print(soft_measure,hard_measure)
+        print("List type soft and hard measure", soft_measure,hard_measure)
+        
+        output_yesno_type=get_val_key('type','yesno',output_answer_json['questions'])
+        #print(len(output_yesno_type))
+        input_question_list=get_input_question_list(input_question_json,output_yesno_type)
+        soft_measure,hard_measure=compute_acc_type(input_question_list,output_yesno_type)      
+        print("Yesno type soft and hard measure", soft_measure,hard_measure)
+       
+        output_factoid_type=get_val_key('type','factoid',output_answer_json['questions'])
+        input_question_list=get_input_question_list(input_question_json,output_factoid_type)
+        soft_measure,hard_measure=compute_acc_type(input_question_list,output_factoid_type)      
+        print("Factoid type soft and hard measure", soft_measure,hard_measure)
 
 
         
