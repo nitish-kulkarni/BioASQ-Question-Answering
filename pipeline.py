@@ -1,17 +1,24 @@
 # from flask import Flask, request, abort, render_template
 # from flask import jsonify, render_template
 
+import os
+java_path = "C:/../../jdk1.8.0_101/bin/java.exe"
+os.environ['JAVAHOME'] = java_path
+
 import sys
 import json
 import copy
+import nltk
+#nltk.download('punkt')
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 from Expander import Expander
 from NoExpander import NoExpander
-from SnomedctExpander import SnomedctExpander
-from UMLSExpander import UMLSExpander
+#from SnomedctExpander import SnomedctExpander
+#from UMLSExpander import UMLSExpander
 
 from BiRanker import BiRanker
+from GreedyRanker import GreedyRanker
 from coreMMR import CoreMMR
 from SoftMMR import SoftMMR
 from HardMMR import HardMMR
@@ -34,12 +41,13 @@ import pyrouge
 import logging
 from logging import config
 
-from pymetamap import MetaMap
+#from pymetamap import MetaMap
 # from singletonConceptId import *
 
 import question_classifier
 
 import retrieval_model as rm
+import sys
 
 from PyRouge import pyrouge as Pyrouge
 
@@ -114,8 +122,18 @@ class Pipeline(object):
         avg_recall = 0
         avg_f = 0
 
-        for (i, question) in enumerate(data['questions']): # looping over all questions
-
+        ## split train and test data
+        total_num_data = len(data['questions'])
+        training_num_data = int(total_num_data*0.7)
+        val_num_data = int(total_num_data*0.2)
+        test_num_data = int(total_num_data*0.1)
+        train_data = data['questions'][:training_num_data]
+        dev_data = data['questions'][training_num_data:training_num_data+val_num_data]
+        test_data = data['questions'][training_num_data+val_num_data:]
+        print('# of training data:',len(train_data),', # of dev data:', len(dev_data),' # of test data:', len(test_data))
+        
+        test_id = 0
+        for (i, question) in enumerate(test_data): # looping over all test questions
             logger.info('Started summarization pipeline for Question '+ str(i))
 
             ExpansiontoOriginal = {}
@@ -135,6 +153,12 @@ class Pipeline(object):
                 pred_length = 4
             else:
                 pass
+
+            #only consider summary question
+            if pred_cat != 'summary':
+                continue
+            test_id += 1
+            print('Working on test data num :',test_id)
 
             modifiedQuestion = copy.copy(question)
 
@@ -202,33 +226,39 @@ class Pipeline(object):
             #finalSummary = EvaluatePrecision.betterAnswer(baseline_summary, fused_Summary, question['body'])
 
             #logger.info('Choosing better summary ...')
-
-            # if pred_cat == 'summary':
-            #     score = rouge.rouge_l([finalSummary.encode('ascii')], [str(question['ideal_answer']).encode('ascii')])
-            #     count += 1
-            #     avg_prec += score[0]
-            #     avg_recall += score[1]
-            #     avg_f += score[1]
-
+            if pred_cat == 'summary':
+                try:
+                    score = rouge.rouge_l([finalSummary.encode('ascii',errors='ignore')], [str(question['ideal_answer']).encode('ascii',errors='ignore')])
+                except:
+                    print('shit')
+                    continue
+                #score = rouge.rouge_l([unicode(finalSummary,errors='ignore')], [unicode(str(question['ideal_answer']),errors='ignore')])
+                count += 1
+                avg_prec += score[0]
+                avg_recall += score[1]
+                avg_f += score[2]
             question['ideal_answer'] = finalSummary
 
             AnswerQuestion = question
             allAnswerQuestion.append(AnswerQuestion)
             logger.info('Inserted ideal answer into the json dictionary')
         # metamapInstance.stopMetaMap()
-        # avg_prec /= count
-        # avg_recall /= count
-        # avg_f /= count
-        # print 'My results '
-        # print avg_prec, avg_recall, avg_f
+        avg_prec /= count
+        avg_recall /= count
+        avg_f /= count
+        print 'My results '
+        print avg_prec, avg_recall, avg_f
+        print('finish testing...')
+        quit()
         return allAnswerQuestion
 
 if __name__ == '__main__':
 
     # filePath = sys.argv[1]
-    filePath = "./input/phaseB_5b_05.json"
+    filePath = "./input/BioASQ-trainingDataset5b.json"
     expanderInstance = NoExpander()
     biRankerInstance = CoreMMR()
+    #biRankerInstance = GreedyRanker()
     # biRankerInstance = BM25Ranker()
     # biRankerInstance = IndriRanker()
     orderInstance = MajorityCluster()

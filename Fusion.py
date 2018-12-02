@@ -9,8 +9,8 @@ from collections import Counter
 import takahe
 import multiprocessing
 import document
-from pulp import GLPK
 import pulp
+from pulp import GLPK
 import nltk
 import string
 import re
@@ -198,8 +198,9 @@ class Fusion(Tiler):
                             if bigram in bsentence]) >= concepts[i]
 
         # solve the problem
-        problem.solve(GLPK())
-
+        #problem.solve(GLPK())
+        #problem.solve()
+        problem.solve(GLPK(msg=False))
         summary = []
         # get the sentences back
         for j in range(numsentences):

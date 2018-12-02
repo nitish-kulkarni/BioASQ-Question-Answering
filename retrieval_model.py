@@ -147,12 +147,13 @@ def get_ranked_snippets(snippets, question_text, algo='BM25'):
 
     score_list = dict()
     N = len(snippets)
-    avg_doc_length = float(total_token_count) / N
+    #avg_doc_length = float(total_token_count) / N
 
     for snippet in snippets:
         tokens = get_tokens(snippet['text'])
         # score = get_BM25_score(term_dict, question_tokens, snippet['text'].encode('ascii', "ignore"), tokens, N, avg_doc_length)
-        score = get_Indri_Score(term_dict, question_tokens, snippet['text'].encode('ascii', "ignore"), len(tokens))
+        #score = get_Indri_Score(term_dict, question_tokens, snippet['text'].encode('ascii', "ignore"), len(tokens))
+        score = get_Indri_Score(term_dict, question_tokens, snippet['text'].encode('ascii', "ignore"), len(tokens), N)
         score_list[snippet['text'].encode('ascii', "ignore")] = score
 
     sorted_d = sorted(score_list.items(), key=operator.itemgetter(1), reverse=True)

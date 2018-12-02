@@ -1,8 +1,5 @@
 from BiRanker import BiRanker
 from SimilarityJaccard import *
-from SimilarityDice import *
-from SimilarityCosine import *
-from SimilarityAll import *
 
 import logging
 from logging import config
@@ -18,7 +15,7 @@ logger = logging.getLogger('bioAsqLogger')
 
 
 # Class that extends the abstract class BiRanker
-class CoreMMR(BiRanker):
+class GreedyRanker(BiRanker):
     # implementation of the abstract method that takes question as input and returns a ranked list of sentences as output
     def getRankedList(self, question):
         selectedSentences = []
@@ -32,16 +29,23 @@ class CoreMMR(BiRanker):
         length = 0
         # class method from abstract class that tokenizes all the snippets to sentences.
         sentences = self.getSentences(question)
+        score = [SimilarityJaccard(sentence, question['body']).calculateSimilarity() for sentence in sentences]
+        index = range(len(score))
+        index.sort(reverse=True,key=lambda x:score[x])
+        for i in range(min(self.numSelectedSentences,len(index))):
+            selectedSentences.append(sentences[index[i]])
+        return selectedSentences
+
+
         for i in range(self.numSelectedSentences):
             best_sim = -99999999
             for sentence in sentences:
                 # similarityJaccard is an extension of Similarity Measure that takes 2 sentences ansd returns the float (similarity)
-                similarity_class = SimilarityAll
-                similarityInstance = similarity_class(sentence, question['body'])
+                similarityInstance = SimilarityJaccard(sentence, question['body'])
                 ques_sim = similarityInstance.calculateSimilarity()
                 max_sent_sim = -99999999
                 for other in best:
-                    similarityInstance = similarity_class(sentence, other)
+                    similarityInstance = SimilarityJaccard(sentence, other)
                     if self.beta != 0:
                         try:
                             current_sent_sim = (self.beta * similarityInstance.calculateSimilarity()) + (
