@@ -8,7 +8,7 @@ from SimilarityJaccard import *
 from Root import *
 
 
-class SimilarityAll(SimilarityMeasure):
+class SimilarityAll2(SimilarityMeasure):
 
     def calculateSimilarity(self):
         jac = SimilarityJaccard
