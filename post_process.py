@@ -15,7 +15,7 @@ def count_key(key_type,object):
 
 def get_val_key(keyname,keyval,object):
         keyname=str(keyname)
-        print(keyname)
+        #print(keyname)
         a=[k for k in object if k.get(keyname)==keyval]
         return a
 
@@ -28,7 +28,12 @@ def compute_acc_type(inp_list,output_list):
         for question in inp_list:
                 #print(question.keys())
                 exact_answer=question['exact_answer']
+
                 exact_answer_flatted=list_flatten(exact_answer)
+                if exact_answer=='yes':
+                    exact_answer_flatted=['yes']
+                if exact_answer=='no':
+                    exact_answer_flatted=['no']
                 id_ques=question['id']
                 output_answer=get_val_key('id',id_ques,output_list) 
                 #print(output_answer)
