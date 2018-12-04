@@ -155,8 +155,8 @@ class Pipeline(object):
                 pass
 
             #only consider summary question
-            if pred_cat != 'summary':
-                continue
+            #if pred_cat != 'summary':
+            #    continue
             test_id += 1
             print('Working on test data num :',test_id)
 
@@ -249,7 +249,7 @@ class Pipeline(object):
         print 'My results '
         print avg_prec, avg_recall, avg_f
         print('finish testing...')
-        quit()
+        #quit()
         return allAnswerQuestion
 
 if __name__ == '__main__':
