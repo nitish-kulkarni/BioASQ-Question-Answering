@@ -3,6 +3,7 @@ from SimilarityJaccard import *
 from SimilarityDice import *
 from SimilarityCosine import *
 from SimilarityAll import *
+from SimilarityAll2 import *
 
 import logging
 from logging import config
