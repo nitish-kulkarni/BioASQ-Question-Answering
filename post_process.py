@@ -20,7 +20,16 @@ def get_val_key(keyname,keyval,object):
         return a
 
 def list_flatten(inp_list):
-    return [item for subitem in inp_list for item in subitem]
+    print("type()inp_list",type(inp_list))
+    print("inp_list is ",inp_list)
+    if isinstance(inp_list,str):
+        print("here")
+        return [inp_list]
+    else:
+        if len(inp_list) > 1:
+            return [item for subitem in inp_list for item in subitem]
+        else:
+            return inp_list[0]
 
 def compute_acc_type(inp_list,output_list):
         soft_measure=[]
@@ -30,10 +39,10 @@ def compute_acc_type(inp_list,output_list):
                 exact_answer=question['exact_answer']
 
                 exact_answer_flatted=list_flatten(exact_answer)
-                if exact_answer=='yes':
-                    exact_answer_flatted=['yes']
-                if exact_answer=='no':
-                    exact_answer_flatted=['no']
+                #if exact_answer=='yes':
+                #    exact_answer_flatted=['yes']
+                #if exact_answer=='no':
+                #    exact_answer_flatted=['no']
                 id_ques=question['id']
                 output_answer=get_val_key('id',id_ques,output_list) 
                 #print(output_answer)
