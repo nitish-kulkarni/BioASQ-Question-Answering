@@ -1,0 +1,7 @@
+##### 
+#####
+requirements - pymedtermino - https://pythonhosted.org/PyMedTermino/
+Installation version - https://pythonhosted.org/PyMedTermino/tuto_en.html#installation
+
+pip install pulp
+pip install pyrouge

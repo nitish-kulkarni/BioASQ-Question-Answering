@@ -1,5 +1,9 @@
 from BiRanker import BiRanker
 from SimilarityJaccard import *
+from SimilarityDice import *
+from SimilarityCosine import *
+from SimilarityAll import *
+from SimilarityAll2 import *
 
 import logging
 from logging import config
@@ -33,11 +37,12 @@ class CoreMMR(BiRanker):
             best_sim = -99999999
             for sentence in sentences:
                 # similarityJaccard is an extension of Similarity Measure that takes 2 sentences ansd returns the float (similarity)
-                similarityInstance = SimilarityJaccard(sentence, question['body'])
+                similarity_class = SimilarityDice
+                similarityInstance = similarity_class(sentence, question['body'])
                 ques_sim = similarityInstance.calculateSimilarity()
                 max_sent_sim = -99999999
                 for other in best:
-                    similarityInstance = SimilarityJaccard(sentence, other)
+                    similarityInstance = similarity_class(sentence, other)
                     if self.beta != 0:
                         try:
                             current_sent_sim = (self.beta * similarityInstance.calculateSimilarity()) + (
